@@ -17,12 +17,14 @@ type ContainerProps = {
   children: ReactNode;
   style?: StyleProp<ViewStyle>;
   scrollable?: boolean;
+  backgroundColor?: string;
 };
 
 const Container = ({
   children,
   style,
   scrollable = false,
+  backgroundColor,
 }: ContainerProps) => {
   const theme = useTheme();
 
@@ -43,6 +45,7 @@ const Container = ({
         styles.safeArea,
         {
           backgroundColor:
+            backgroundColor ??
             theme.colors.background,
         },
       ]}

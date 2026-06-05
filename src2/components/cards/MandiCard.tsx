@@ -3,7 +3,8 @@ import React from 'react';
 import { TouchableOpacity, Text, StyleSheet, View } from 'react-native';
 
 import { useTheme } from 'react-native-paper';
-
+import Headline from '@components/common/Headline';
+import Paragraph from '@components/common/Paragraph';
 type Props = {
   crop: string;
 
@@ -29,7 +30,7 @@ const MandiCard = ({ crop, market, price, onPress }: Props) => {
       ]}
     >
       <View style={styles.topRow}>
-        <Text
+        <Paragraph
           style={[
             styles.crop,
             {
@@ -38,9 +39,9 @@ const MandiCard = ({ crop, market, price, onPress }: Props) => {
           ]}
         >
           {crop}
-        </Text>
+        </Paragraph>
 
-        <Text
+        <Paragraph
           style={[
             styles.price,
             {
@@ -49,10 +50,10 @@ const MandiCard = ({ crop, market, price, onPress }: Props) => {
           ]}
         >
           {price}
-        </Text>
+        </Paragraph>
       </View>
 
-      <Text
+      <Paragraph
         style={[
           styles.market,
           {
@@ -61,7 +62,7 @@ const MandiCard = ({ crop, market, price, onPress }: Props) => {
         ]}
       >
         {market}
-      </Text>
+      </Paragraph>
     </TouchableOpacity>
   );
 };
@@ -74,11 +75,11 @@ const styles = StyleSheet.create({
 
     borderRadius: 22,
 
-    paddingVertical: 14,
+    paddingVertical: 10,
 
     paddingHorizontal: 14,
 
-    marginBottom: 12,
+    marginBottom: 10,
   },
 
   topRow: {
@@ -88,18 +89,16 @@ const styles = StyleSheet.create({
   },
 
   crop: {
-    fontSize: 14,
-
     fontWeight: '800',
   },
 
   price: {
+    fontSize: 14,
     fontWeight: '900',
   },
 
   market: {
-    marginTop: 5,
-
+    // marginTop: 5,
     fontSize: 12,
   },
 });

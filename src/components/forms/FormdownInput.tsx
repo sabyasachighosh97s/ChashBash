@@ -1,18 +1,25 @@
-// DropdownInput.tsx
-
 import React, { memo, useMemo, useCallback } from 'react';
 import { StyleSheet, View } from 'react-native';
 import { HelperText, TextInput, useTheme } from 'react-native-paper';
 import { Dropdown } from 'react-native-paper-dropdown';
-import { Controller, Control, FieldErrors, FieldError } from 'react-hook-form';
+
+import {
+  Controller,
+  Control,
+  FieldError,
+  FieldValues,
+  Path,
+} from 'react-hook-form';
+
 type DropdownOption = {
   label: string;
   value: string;
 };
-type DropdownInputProps = {
+
+type DropdownInputProps<T extends FieldValues> = {
   labelText: string;
-  name: string;
-  control: Control<any>;
+  name: Path<T>;
+  control: Control<T>;
   data: DropdownOption[];
   error?: FieldError;
   disabled?: boolean;
@@ -21,6 +28,7 @@ type DropdownInputProps = {
   customPrimaryColor?: string;
   placeholder?: string;
 };
+
 type CustomDropdownInputProps = {
   selectedLabel?: string;
   rightIcon?: React.ReactNode;
@@ -35,6 +43,7 @@ type CustomDropdownInputProps = {
   placeholder?: string;
   labelText?: string;
 };
+
 const CustomDropdownInput = memo(
   ({
     labelText,
@@ -50,7 +59,8 @@ const CustomDropdownInput = memo(
     hasError,
     placeholder,
   }: CustomDropdownInputProps) => {
-    const theme = useTheme<any>();
+    const theme = useTheme();
+
     return (
       <TextInput
         mode={mode || 'outlined'}
@@ -107,108 +117,101 @@ const CustomDropdownInput = memo(
   },
 );
 
-const FormdownInput = memo(
-  ({
-    labelText,
-    name,
-    control,
-    data,
-    error,
-    disabled = false,
-    customBorderColor,
-    customBackgroundColor,
-    customPrimaryColor,
-    placeholder,
-  }: DropdownInputProps) => {
-    const theme = useTheme<any>();
+const FormdownInput = <T extends FieldValues>({
+  labelText,
+  name,
+  control,
+  data,
+  error,
+  disabled = false,
+  customBorderColor,
+  customBackgroundColor,
+  customPrimaryColor,
+  placeholder,
+}: DropdownInputProps<T>) => {
+  const theme = useTheme();
 
-    const hasError = !!error;
+  const hasError = !!error;
+  const errorMessage = error?.message?.toString();
 
-    const errorMessage = error?.message?.toString();
+  const memoizedOptions = useMemo(() => {
+    return data.map(item => ({
+      label: item.label,
+      value: item.value?.toString(),
+    }));
+  }, [data]);
 
-    console.log(name, 'dropdown render');
-
-    // prevent options recreation
-    const memoizedOptions = useMemo(() => {
-      return data.map(item => ({
-        label: item.label,
-        value: item.value?.toString(),
-      }));
-    }, [data]);
-
-    // prevent custom input recreation
-    const MemoizedDropdownInput = useCallback(
-      (props: any) => (
-        <CustomDropdownInput
-          labelText={labelText}
-          {...props}
-          placeholder={placeholder}
-          customBorderColor={customBorderColor}
-          customBackgroundColor={customBackgroundColor}
-          customPrimaryColor={customPrimaryColor}
-          hasError={hasError}
-        />
-      ),
-      [
-        placeholder,
-        customBorderColor,
-        customBackgroundColor,
-        customPrimaryColor,
-        hasError,
-      ],
-    );
-
-    // stable select callback
-    const handleSelect = useCallback(
-      (selectedValue: any, onChange: (value: string) => void) => {
-        onChange(selectedValue || '');
-      },
-      [],
-    );
-
-    return (
-      <Controller
-        control={control}
-        name={name}
-        render={({ field: { onChange, value } }) => (
-          <View style={styles.container}>
-            <Dropdown
-              label={`${labelText}*`}
-              mode="outlined"
-              value={value}
-              options={memoizedOptions}
-              disabled={disabled}
-              error={hasError}
-              statusBarHeight={100}
-              onSelect={selectedValue => handleSelect(selectedValue, onChange)}
-              menuContentStyle={{
-                backgroundColor: customBackgroundColor || theme.colors.surface,
-                borderWidth: 1,
-                borderColor: theme.colors.border,
-                borderRadius: 12,
-                maxHeight: 300,
-                overflow: 'hidden',
-              }}
-              CustomDropdownInput={MemoizedDropdownInput}
-            />
-
-            {hasError && (
-              <HelperText
-                type="error"
-                visible={hasError}
-                style={styles.errorText}
-              >
-                {errorMessage}
-              </HelperText>
-            )}
-          </View>
-        )}
+  const MemoizedDropdownInput = useCallback(
+    (props: any) => (
+      <CustomDropdownInput
+        labelText={labelText}
+        {...props}
+        placeholder={placeholder}
+        customBorderColor={customBorderColor}
+        customBackgroundColor={customBackgroundColor}
+        customPrimaryColor={customPrimaryColor}
+        hasError={hasError}
       />
-    );
-  },
-);
+    ),
+    [
+      labelText,
+      placeholder,
+      customBorderColor,
+      customBackgroundColor,
+      customPrimaryColor,
+      hasError,
+    ],
+  );
 
-export default FormdownInput;
+  const handleSelect = useCallback(
+    (selectedValue: any, onChange: (value: string) => void) => {
+      onChange(selectedValue || '');
+    },
+    [],
+  );
+
+  return (
+    <Controller
+      control={control}
+      name={name}
+      render={({ field: { onChange, value } }) => (
+        <View style={styles.container}>
+          <Dropdown
+            label={`${labelText}*`}
+            mode="outlined"
+            value={value}
+            options={memoizedOptions}
+            disabled={disabled}
+            error={hasError}
+            statusBarHeight={100}
+            onSelect={selectedValue => handleSelect(selectedValue, onChange)}
+            menuContentStyle={{
+              backgroundColor: customBackgroundColor || theme.colors.surface,
+              borderWidth: 1,
+              borderColor: theme.colors.outline,
+              borderRadius: 12,
+              maxHeight: 300,
+              overflow: 'hidden',
+            }}
+            CustomDropdownInput={MemoizedDropdownInput}
+          />
+
+          {hasError && (
+            <HelperText
+              type="error"
+              visible={hasError}
+              style={styles.errorText}
+            >
+              {errorMessage}
+            </HelperText>
+          )}
+        </View>
+      )}
+    />
+  );
+};
+
+export default memo(FormdownInput) as typeof FormdownInput;
 
 const styles = StyleSheet.create({
   container: {
@@ -222,6 +225,5 @@ const styles = StyleSheet.create({
 
   errorText: {
     marginLeft: 0,
-    // marginTop: 4,
   },
 });

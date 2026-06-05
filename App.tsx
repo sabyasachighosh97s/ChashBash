@@ -1,22 +1,37 @@
+import 'react-native-gesture-handler';
+
 import React from 'react';
+
 import { SafeAreaProvider } from 'react-native-safe-area-context';
+
 import { Provider as PaperProvider } from 'react-native-paper';
-import { useColorScheme } from 'react-native';
+
 import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
-import { AppNavigator } from '@navigation/AppNavigator';
-import { lightTheme, darkTheme } from '@themes/lightTheme';
-import './src/localization/i18n'; // Create client outside component to prevent recreation on each render
+
+import { NavigationContainer } from '@react-navigation/native';
+
+import BottomTabNavigator from '@navigation/BottomTabNavigator';
+
+import { lightTheme } from '@themes/lightTheme';
+
+import './src/localization/i18n';
+import RootStackNavigator from '@navigation/RootStackNavigator';
+/*
+=====================================
+REACT QUERY
+=====================================
+*/
+
 const queryClient = new QueryClient();
 
 export default function App() {
-  const colorScheme = useColorScheme();
-  const theme = colorScheme === 'dark' ? darkTheme : lightTheme;
-
   return (
     <SafeAreaProvider>
       <QueryClientProvider client={queryClient}>
-        <PaperProvider theme={theme}>
-          <AppNavigator />
+        <PaperProvider theme={lightTheme}>
+          <NavigationContainer>
+            <RootStackNavigator />
+          </NavigationContainer>
         </PaperProvider>
       </QueryClientProvider>
     </SafeAreaProvider>

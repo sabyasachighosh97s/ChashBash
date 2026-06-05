@@ -1,43 +1,68 @@
+
+import useThemeMode from '@hook/useThemeMode';
 import React, { ReactNode } from 'react';
-
-import { StyleSheet, ViewStyle, StyleProp } from 'react-native';
-
-import { Card, useTheme } from 'react-native-paper';
-
+import {
+  StyleSheet,
+  ViewStyle,
+  StyleProp,
+  TouchableOpacity,
+  GestureResponderEvent,
+} from 'react-native';
+import { Card } from 'react-native-paper';
+type CardVariant = 'default' | 'outlined' | 'contained';
 type CustomCardProps = {
   children: ReactNode;
   style?: StyleProp<ViewStyle>;
+  variant?: CardVariant;
+  onPress?: (event: GestureResponderEvent) => void;
 };
+export const CustomCard = ({
+  children,
+  style,
+  variant = 'default',
+  onPress,
+}: CustomCardProps) => {
+  const { theme, isDark } = useThemeMode();
+  const colors = theme.colors;
+  const cardStyle = [
+    styles.card,
+    // DEFAULT
+    variant === 'default' && {
+      backgroundColor: colors.surface,
+      borderWidth: 0.5,
+      borderColor: colors.border,
+    },
+    // OUTLINED
+    variant === 'outlined' && {
+      borderWidth: 0.5,
+      borderColor: colors.outline,
+      backgroundColor: 'transparent',
+      elevation: 0,
+    },
+    // CONTAINED
+    variant === 'contained' && {
+      borderWidth: 0,
+      backgroundColor: 'transparent',
+      elevation: 0,
+    },
 
-export const CustomCard = ({ children, style }: CustomCardProps) => {
-  const theme = useTheme<any>();
-  const isDark = theme.dark;
-
+    style,
+  ];
+  const CardWrapper = onPress ? TouchableOpacity : React.Fragment;
+  const wrapperProps = onPress
+    ? {
+        onPress,
+        activeOpacity: 0.7,
+      }
+    : {};
   return (
-    <Card
-      mode="contained"
-      style={[
-        styles.card,
-        {
-          backgroundColor: isDark
-            ? 'rgba(30,30,30,0.9)'
-            : 'rgba(255,255,255,0.9)',
-
-          borderWidth: 1,
-
-          //   borderColor: isDark
-          //     ? 'rgba(255,255,255,0.08)'
-          //     : 'rgba(0,0,0,0.08)',
-          borderColor: theme.colors.border,
-        },
-        style,
-      ]}
-    >
-      {children}
-    </Card>
+    <CardWrapper {...wrapperProps}>
+      <Card mode="contained" style={cardStyle}>
+        {children}
+      </Card>
+    </CardWrapper>
   );
 };
-
 const styles = StyleSheet.create({
   card: {
     borderRadius: 16,
