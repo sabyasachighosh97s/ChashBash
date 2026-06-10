@@ -12,6 +12,8 @@ import { Container, Card, Headline, Paragraph } from '@components/ui';
 import { CustomStatusBar } from '@components/common/CustomStatusBar';
 import AppIcon from '@components/AppIcon/AppIcon';
 import { useTranslation } from 'react-i18next';
+import colors from '@themes/colors';
+import AppFab from '@components/AppFab/AppFab';
 
 const CommunityScreen = ({ navigation }: any) => {
   const { t } = useTranslation();
@@ -138,7 +140,7 @@ const CommunityScreen = ({ navigation }: any) => {
             type="MaterialCommunityIcons"
             name={item.liked ? 'thumb-up' : 'thumb-up-outline'}
             size={22}
-            color={item.liked ? '#1877F2' : '#65676B'}
+            color={item.liked ? colors.info : colors.placeholder}
           />
 
           <Paragraph
@@ -165,7 +167,7 @@ const CommunityScreen = ({ navigation }: any) => {
             type="MaterialCommunityIcons"
             name="message-outline"
             size={22}
-            color="#65676B"
+            color={colors.placeholder}
           />
 
           <Paragraph size="sm" style={[styles.actionText, { marginTop: 4 }]}>
@@ -181,7 +183,7 @@ const CommunityScreen = ({ navigation }: any) => {
             type="MaterialCommunityIcons"
             name="share-variant-outline"
             size={22}
-            color="#65676B"
+            color={colors.placeholder}
           />
 
           <Paragraph size="sm" style={[styles.actionText, { marginTop: 4 }]}>
@@ -209,7 +211,16 @@ const CommunityScreen = ({ navigation }: any) => {
         }}
       />
 
-      <TouchableOpacity
+      <AppFab
+        actions={[
+          {
+            icon: 'post',
+            label: t('create_post'),
+            onPress: () => navigation.navigate('Add'),
+          },
+        ]}
+      />
+      {/* <TouchableOpacity
         style={styles.fab}
         onPress={() => navigation.navigate('Add')}
       >
@@ -218,12 +229,12 @@ const CommunityScreen = ({ navigation }: any) => {
             type="MaterialCommunityIcons"
             name="plus-circle"
             size={20}
-            color="#FFFFFF"
+            color={colors.textLight}
           />
 
           <Paragraph style={styles.fabText}>{t('create_post')}</Paragraph>
         </View>
-      </TouchableOpacity>
+      </TouchableOpacity> */}
     </Container>
   );
 };
@@ -254,14 +265,14 @@ const styles = StyleSheet.create({
     width: 40,
     height: 40,
     borderRadius: 25,
-    backgroundColor: '#114603',
+    backgroundColor: colors.primary,
     justifyContent: 'center',
     alignItems: 'center',
     marginRight: 12,
   },
 
   avatarText: {
-    color: '#fff',
+    color: colors.textLight,
     fontWeight: '700',
     fontSize: 18,
   },
@@ -281,7 +292,7 @@ const styles = StyleSheet.create({
   actionRow: {
     flexDirection: 'row',
     borderTopWidth: 1,
-    borderTopColor: '#E4E6EB',
+    borderTopColor: colors.border,
     marginTop: 12,
     paddingTop: 8,
     justifyContent: 'space-between',
@@ -294,18 +305,18 @@ const styles = StyleSheet.create({
   },
 
   actionText: {
-    color: '#65676B',
+    color: colors.placeholder,
     fontWeight: '600',
   },
 
   likedText: {
-    color: '#1877F2', // Facebook Blue
+    color: colors.info, // Facebook Blue
   },
   fab: {
     position: 'absolute',
     bottom: 80,
     right: 20,
-    backgroundColor: '#114603',
+    backgroundColor: colors.primary,
     paddingHorizontal: 18,
     height: 52,
     borderRadius: 26,
@@ -316,7 +327,7 @@ const styles = StyleSheet.create({
 
   divider: {
     height: 1,
-    backgroundColor: '#ECEFF1',
+    backgroundColor: colors.border,
     marginTop: 16,
   },
 
@@ -346,20 +357,20 @@ const styles = StyleSheet.create({
   timeText: {
     alignSelf: 'flex-start',
     textAlign: 'left',
-    color: '#757575',
+    color: colors.placeholder,
     fontSize: 12,
     lineHeight: 10,
   },
 
   badge: {
-    backgroundColor: '#E8F5E9',
+    backgroundColor: colors.background,
     paddingHorizontal: 10,
     paddingVertical: 4,
     borderRadius: 10,
   },
 
   badgeText: {
-    color: '#114603',
+    backgroundColor: colors.primary,
     fontWeight: '600',
   },
   fabContent: {
@@ -368,7 +379,7 @@ const styles = StyleSheet.create({
   },
 
   fabText: {
-    color: '#fff',
+    color: colors.textLight,
     fontWeight: '600',
     marginLeft: 8,
   },

@@ -40,6 +40,10 @@ const CarbonSection = ({ data }: Props) => {
         {data.cards.map((item, index) => {
           const isAWD = index === 0;
 
+          const cardBackground = isAWD
+            ? theme.colors.surface
+            : theme.colors.surface;
+
           return (
             <Card
               key={item.label}
@@ -68,7 +72,7 @@ const CarbonSection = ({ data }: Props) => {
                 style={[
                   styles.priceBox,
                   {
-                    backgroundColor: isAWD ? '#EAF1FF' : '#E8F6E4',
+                    backgroundColor: cardBackground,
                   },
                 ]}
               >
@@ -103,7 +107,7 @@ const CarbonSection = ({ data }: Props) => {
                 style={[
                   styles.button,
                   {
-                    backgroundColor: isAWD ? '#EAF1FF' : '#E8F6E4',
+                    backgroundColor: cardBackground,
                   },
                 ]}
               >

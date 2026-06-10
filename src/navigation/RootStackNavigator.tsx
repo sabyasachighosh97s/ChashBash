@@ -5,21 +5,22 @@ import BottomTabNavigator from './BottomTabNavigator';
 import CommentsScreen from '../Community/CommentsScreen';
 import LoginScreen from '../screens/LoginScreen';
 import DiseaseResultScreen from '@screens/DiseaseResultScreen';
+import SplashScreen from '@screens/SplashScreen';
 
 const Stack = createNativeStackNavigator();
 
 const RootStackNavigator = () => {
   return (
     <Stack.Navigator
-      initialRouteName="Login"
+      initialRouteName="Splash"
       screenOptions={{
         headerShown: false,
       }}
     >
+      <Stack.Screen name="Splash" component={SplashScreen} />
       <Stack.Screen name="Login" component={LoginScreen} />
       <Stack.Screen name="DiseaseResult" component={DiseaseResultScreen} />
       <Stack.Screen name="MainTabs" component={BottomTabNavigator} />
-
       <Stack.Screen name="Comments" component={CommentsScreen} />
     </Stack.Navigator>
   );

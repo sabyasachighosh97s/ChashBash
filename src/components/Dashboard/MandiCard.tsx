@@ -12,14 +12,12 @@ import {
   Paragraph,
 } from '@components/ui';
 import useThemeMode from '@hook/useThemeMode';
+import colors from '@themes/colors';
 
 type Props = {
   crop: string;
-
   market: string;
-
   price: string;
-
   onPress?: () => void;
 };
 

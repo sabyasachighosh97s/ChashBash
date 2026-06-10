@@ -1,7 +1,7 @@
 import React, { useState } from 'react';
 
 import { StyleSheet, TouchableOpacity, View } from 'react-native';
-
+import colors from '@themes/colors';
 import { Container, Card, Button, Paragraph, Headline } from '@components/ui';
 import AppIcon from '@components/AppIcon/AppIcon';
 import { TextInput } from 'react-native';
@@ -20,7 +20,7 @@ const CreatePostScreen = ({ navigation }: any) => {
   };
 
   return (
-    <Container backgroundColor="#F0F2F5">
+    <Container backgroundColor={colors.background}>
       <Headline size="xl" style={styles.pageTitle}>
         Create Post
       </Headline>
@@ -38,7 +38,7 @@ const CreatePostScreen = ({ navigation }: any) => {
 
         <TextInput
           placeholder={t('farm_today_prompt')}
-          placeholderTextColor="#8A8D91"
+          placeholderTextColor={colors.placeholder}
           multiline
           value={content}
           onChangeText={setContent}
@@ -51,7 +51,7 @@ const CreatePostScreen = ({ navigation }: any) => {
               type="MaterialCommunityIcons"
               name="image-plus"
               size={22}
-              color="#1877F2"
+              color={colors.info}
             />
 
             <Paragraph style={styles.mediaText}>{t('add_photo')}</Paragraph>
@@ -96,14 +96,14 @@ const styles = StyleSheet.create({
     width: 52,
     height: 52,
     borderRadius: 26,
-    backgroundColor: '#114603',
+    backgroundColor: colors.primary,
     justifyContent: 'center',
     alignItems: 'center',
     marginRight: 12,
   },
 
   avatarText: {
-    color: '#FFF',
+    color: colors.textLight,
     fontWeight: '700',
     fontSize: 18,
   },
@@ -112,13 +112,13 @@ const styles = StyleSheet.create({
     minHeight: 100,
     fontSize: 18,
     textAlignVertical: 'top',
-    color: '#050505',
+    color: colors.text,
   },
 
   mediaCard: {
     // marginTop: 20,
     borderWidth: 1,
-    borderColor: '#E4E6EB',
+    borderColor: colors.border,
     borderRadius: 14,
     paddingVertical: 15,
     alignItems: 'center',
@@ -130,7 +130,7 @@ const styles = StyleSheet.create({
   },
 
   mediaText: {
-    color: '#1877F2',
+    color: colors.info,
     fontWeight: '600',
     marginLeft: 8,
   },
@@ -138,7 +138,7 @@ const styles = StyleSheet.create({
   publishButton: {
     marginHorizontal: 16,
     marginTop: 20,
-    backgroundColor: '#1877F2',
+    color: colors.info,
     height: 52,
     borderRadius: 12,
     justifyContent: 'center',
@@ -146,11 +146,11 @@ const styles = StyleSheet.create({
   },
 
   disabledButton: {
-    backgroundColor: '#BCC0C4',
+    backgroundColor: colors.disabled,
   },
 
   publishText: {
-    color: '#FFF',
+    color: colors.textLight,
     fontWeight: '700',
   },
   card: {

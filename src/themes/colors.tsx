@@ -22,6 +22,16 @@ const colors = {
   placeholder: '#757575',
   disabled: '#9e9e9e',
   backdrop: 'rgba(0,0,0,0.5)',
+  glassLight: 'rgba(255,255,255,0.12)',
+  glassMedium: 'rgba(255,255,255,0.18)',
+  glassBorderStrong: 'rgba(255,255,255,0.25)',
+  darkOverlay: 'rgba(0,0,0,0.24)',
+  heroOverlay: 'rgba(0,0,0,0.18)',
+  textMuted: 'rgba(255,255,255,0.8)',
+  textSecondary: '#334155',
+  glassActive: 'rgba(255,255,255,0.28)',
+  cardOverlay: 'rgba(17,8,8,0.27)',
+  glassBorderActive: 'rgba(255,255,255,0.4)',
 };
 
 export default colors;

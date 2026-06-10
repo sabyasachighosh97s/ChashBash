@@ -16,7 +16,7 @@ type ForecastItem = {
   temp: string;
   rain: string;
   weather: string;
-
+  weatherType: 'sunny' | 'cloudy' | 'rain';
   humidity: string;
   rainfall: string;
   wind: string;
@@ -40,6 +40,21 @@ const WeatherForecastCard = ({
   setSelectedForecast,
 }: Props) => {
   const { t } = useTranslation();
+  const getWeatherIcon = (weatherType: 'sunny' | 'cloudy' | 'rain') => {
+    switch (weatherType) {
+      case 'sunny':
+        return 'weather-sunny';
+
+      case 'cloudy':
+        return 'weather-cloudy';
+
+      case 'rain':
+        return 'weather-rainy';
+
+      default:
+        return 'weather-cloudy';
+    }
+  };
   return (
     <View style={styles.mainCard}>
       {/* LOCATION */}
@@ -48,8 +63,8 @@ const WeatherForecastCard = ({
           type="MaterialCommunityIcons"
           name="map-marker"
           size={14}
-          color="#FFFFFF"
-        />{' '}
+          color={colors.textLight}
+        />
         <Paragraph size="sm" style={styles.locationText}>
           Kolkata, India
         </Paragraph>
@@ -63,15 +78,9 @@ const WeatherForecastCard = ({
         <View style={styles.weatherRight}>
           <AppIcon
             type="MaterialCommunityIcons"
-            name={
-              selectedForecast.weather === 'Sunny'
-                ? 'weather-sunny'
-                : selectedForecast.weather === 'Cloudy'
-                ? 'weather-cloudy'
-                : 'weather-rainy'
-            }
+            name={getWeatherIcon(selectedForecast.weatherType)}
             size={28}
-            color="#FFFFFF"
+            color={colors.textLight}
           />
 
           <Paragraph size="sm" style={styles.weatherCondition}>
@@ -136,12 +145,10 @@ const WeatherForecastCard = ({
 
                 {
                   backgroundColor: active
-                    ? 'rgba(255,255,255,0.28)'
-                    : 'rgba(17,8,8,0.27)',
+                    ? colors.glassActive
+                    : colors.cardOverlay,
 
-                  borderColor: active
-                    ? 'rgba(255,255,255,0.4)'
-                    : 'rgba(255,255,255,0.08)',
+                  borderColor: active ? colors.glassBorderActive : colors.glass,
 
                   transform: [
                     {
@@ -157,15 +164,9 @@ const WeatherForecastCard = ({
 
               <AppIcon
                 type="MaterialCommunityIcons"
-                name={
-                  item.weather === 'Sunny'
-                    ? 'weather-sunny'
-                    : item.weather === 'Cloudy'
-                    ? 'weather-cloudy'
-                    : 'weather-rainy'
-                }
+                name={getWeatherIcon(item.weatherType)}
                 size={22}
-                color="#FFFFFF"
+                color={colors.textLight}
               />
 
               <Paragraph lineHeight={15} size="lg" style={styles.tempText}>
@@ -177,7 +178,7 @@ const WeatherForecastCard = ({
                   type="MaterialCommunityIcons"
                   name="water-percent"
                   size={14}
-                  color="rgba(255,255,255,0.75)"
+                  color={colors.textMuted}
                 />
 
                 <Paragraph size="xs" style={styles.rainText}>
@@ -195,7 +196,7 @@ const WeatherForecastCard = ({
           type="MaterialCommunityIcons"
           name="lightbulb-on-outline"
           size={25}
-          color="#F59E0B"
+          color={colors.warning}
         />
 
         <Paragraph size="base" style={styles.quickAdviceText}>
@@ -211,13 +212,9 @@ export default WeatherForecastCard;
 const styles = StyleSheet.create({
   mainCard: {
     marginHorizontal: 15,
-    // marginTop: 10,
-
     borderRadius: 30,
-
     padding: 15,
-
-    backgroundColor: 'rgba(0,0,0,0.12)',
+    backgroundColor: colors.heroOverlay,
   },
 
   locationRow: {
@@ -230,25 +227,20 @@ const styles = StyleSheet.create({
   },
 
   locationText: {
-    color: 'rgba(255,255,255,0.85)',
+    color: colors.textMuted,
     marginLeft: 6,
     fontSize: 14,
   },
 
   weatherMainRow: {
-    // marginTop: 8,
-
     flexDirection: 'row',
-
     justifyContent: 'space-between',
-
     alignItems: 'center',
   },
 
   temperature: {
     color: colors.textLight,
     fontSize: 30,
-
     fontWeight: '900',
   },
 
@@ -262,9 +254,7 @@ const styles = StyleSheet.create({
 
   weatherCondition: {
     marginTop: 4,
-
     color: colors.textLight,
-
     fontWeight: '700',
   },
 
@@ -272,14 +262,9 @@ const styles = StyleSheet.create({
     marginTop: 5,
     marginBottom: 5,
     flexDirection: 'row',
-
     justifyContent: 'space-between',
-
-    backgroundColor: 'rgba(17,8,8,0.28)',
-
+    backgroundColor: colors.cardOverlay,
     borderRadius: 20,
-
-    // paddingVertical: 8,
   },
 
   weatherItem: {
@@ -288,23 +273,19 @@ const styles = StyleSheet.create({
   },
 
   weatherLabel: {
-    color: 'rgba(255,255,255,0.65)',
-
+    color: colors.textMuted,
     fontSize: 11,
   },
 
   weatherValue: {
     marginTop: 3,
-
     color: colors.textLight,
-
     fontWeight: '800',
   },
 
   weatherDivider: {
     width: 1,
-
-    backgroundColor: 'rgba(208, 196, 196, 0.63)',
+    backgroundColor: colors.glassBorderStrong,
   },
 
   tabsContainer: {
@@ -313,38 +294,25 @@ const styles = StyleSheet.create({
 
   forecastTab: {
     width: 105,
-
     borderRadius: 24,
-
-    // paddingVertical: 8,
     alignItems: 'center',
-
     marginRight: 12,
-
     borderWidth: 1,
   },
 
   dayText: {
     color: colors.textLight,
-
     fontWeight: '700',
-
     fontSize: 13,
   },
 
   iconText: {
     fontSize: 18,
-
-    // marginTop: 5,
   },
 
   tempText: {
-    // marginTop: 5,
-
-    color: '#fff',
-
+    color: colors.textLight,
     fontSize: 20,
-
     fontWeight: '900',
   },
 
@@ -356,24 +324,22 @@ const styles = StyleSheet.create({
 
   rainText: {
     marginLeft: 4,
-    color: 'rgba(255,255,255,0.75)',
+    color: colors.textMuted,
     fontSize: 12,
   },
 
   quickAdviceContainer: {
     marginTop: 10,
     alignItems: 'flex-start',
-    backgroundColor: 'rgba(255,255,255,0.12)',
+    backgroundColor: colors.glassLight,
     flexDirection: 'row',
     borderRadius: 18,
-
     paddingVertical: 8,
-
     paddingHorizontal: 12,
   },
 
   quickAdviceText: {
-    color: '#FFFFFF',
+    color: colors.textLight,
     flex: 1,
     marginLeft: 8,
     fontWeight: '600',

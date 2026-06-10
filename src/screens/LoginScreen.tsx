@@ -13,10 +13,11 @@ import Container from '@components/Container/Container';
 import { CustomCard } from '@components/cards/CustomCard';
 import { CustomToast } from '@components/Toast';
 import Headline from '@components/common/Headline';
-import Paragraph from '@components/common/Paragraph';
+import { Paragraph } from '@components/ui';
 import FormInput from '@components/forms/FormInput';
 import FormdownInput from '@components/forms/FormdownInput';
-
+import Logo from '../assets/images/Logo.png';
+import { Image } from 'react-native';
 const schema = z.object({
   company: z.string().min(1, 'Please select company'),
 
@@ -102,9 +103,12 @@ const LoginScreen: React.FC = () => {
         <CustomCard>
           <Card.Content>
             <View style={styles.headerContainer}>
-              <Headline>🌾 ChashBash</Headline>
+              <View style={styles.logoContainer}>
+                <Image source={Logo} style={styles.logo} resizeMode="contain" />
+              </View>
 
               <Paragraph
+                lineHeight={20}
                 // variant="body"
                 style={[styles.subTitle, { color: theme.colors.primary }]}
               >
@@ -189,7 +193,7 @@ const styles = StyleSheet.create({
   },
 
   subTitle: {
-    marginTop: 8,
+    // marginTop: 8,
     fontSize: 16,
   },
 
@@ -208,5 +212,16 @@ const styles = StyleSheet.create({
 
   loginButton: {
     marginBottom: 8,
+  },
+  logoContainer: {
+    // flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'center',
+  },
+
+  logo: {
+    width: 120,
+    height: 120,
+    // marginRight: 10,
   },
 });

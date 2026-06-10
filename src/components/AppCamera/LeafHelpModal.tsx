@@ -1,8 +1,8 @@
 import React from 'react';
-
 import { Modal, StyleSheet, TouchableOpacity, View } from 'react-native';
-
-import { Paragraph } from '@components/ui';
+import { Card, Paragraph } from '@components/ui';
+import { useTranslation } from 'react-i18next';
+import { Rbutton } from '@components/common/Rbutton';
 
 type Props = {
   visible: boolean;
@@ -10,31 +10,38 @@ type Props = {
 };
 
 const LeafHelpModal = ({ visible, onClose }: Props) => {
+  const { t } = useTranslation();
+
   return (
     <Modal visible={visible} transparent animationType="fade">
       <View style={styles.overlay}>
-        <View style={styles.container}>
-          <Paragraph style={styles.title}>
-            লক্ষণ দেখে রোগ নির্ণয় করার পরামর্শ
+        <Card style={styles.container}>
+          <Paragraph size="lg" style={styles.title}>
+            {t('disease_detection_tips')}
           </Paragraph>
 
-          <Paragraph style={styles.text}>
-            ১. ফসলের কাছাকাছি এগিয়ে আসুন এবং ক্ষতিগ্রস্ত অংশটি ফ্রেমের মধ্যে
-            রাখুন।
+          <Paragraph size="base" style={styles.text}>
+            {t('tip_1')}
           </Paragraph>
 
-          <Paragraph style={styles.text}>
-            ২. ক্যামেরা যেন সঠিকভাবে ফোকাস করে তা নিশ্চিত করুন।
+          <Paragraph size="base" style={styles.text}>
+            {t('tip_2')}
           </Paragraph>
 
-          <Paragraph style={styles.text}>
-            ৩. পরিষ্কার আলোতে ছবি তুলুন।
+          <Paragraph size="base" style={styles.text}>
+            {t('tip_3')}
           </Paragraph>
 
-          <TouchableOpacity style={styles.button} onPress={onClose}>
-            <Paragraph style={styles.buttonText}>পেয়েছি</Paragraph>
-          </TouchableOpacity>
-        </View>
+          <Rbutton
+            title={t('got_it')}
+            buttonColor="#1565C0"
+            onPress={onClose}
+            style={{
+              marginTop: 10,
+              borderRadius: 18,
+            }}
+          />
+        </Card>
       </View>
     </Modal>
   );
@@ -52,7 +59,7 @@ const styles = StyleSheet.create({
 
   container: {
     backgroundColor: '#FFF',
-    borderRadius: 24,
+    // borderRadius: 24,
     padding: 24,
   },
 
@@ -64,7 +71,6 @@ const styles = StyleSheet.create({
 
   text: {
     marginBottom: 12,
-    lineHeight: 24,
   },
 
   button: {

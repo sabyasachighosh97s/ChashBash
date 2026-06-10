@@ -5,10 +5,13 @@ import {
   StyleSheet,
   TextInput,
   TouchableOpacity,
+  KeyboardAvoidingView,
+  Platform,
 } from 'react-native';
-
+import colors from '@themes/colors';
 import { Container, Card, Paragraph } from '@components/ui';
 import { useTranslation } from 'react-i18next';
+import AppIcon from '@components/AppIcon/AppIcon';
 
 const CommentsScreen = ({ route }: any) => {
   const { t } = useTranslation();
@@ -69,7 +72,7 @@ const CommentsScreen = ({ route }: any) => {
   );
 
   return (
-    <Container backgroundColor="#F5F6F7">
+    <Container backgroundColor={colors.background}>
       {/* Original Post */}
       <Card style={styles.postCard}>
         <View style={styles.postHeader}>
@@ -101,23 +104,32 @@ const CommentsScreen = ({ route }: any) => {
       />
 
       {/* Comment Input */}
-      <View style={styles.commentComposer}>
-        <View style={styles.myAvatar}>
-          <Paragraph style={styles.commentAvatarText}>Y</Paragraph>
+      <KeyboardAvoidingView
+        behavior={Platform.OS === 'ios' ? 'padding' : 'height'}
+      >
+        <View style={styles.commentComposer}>
+          <View style={styles.myAvatar}>
+            <Paragraph style={styles.commentAvatarText}>Y</Paragraph>
+          </View>
+
+          <TextInput
+            value={comment}
+            onChangeText={setComment}
+            placeholder={t('write_comment')}
+            placeholderTextColor={colors.placeholder}
+            style={styles.commentInput}
+          />
+
+          <TouchableOpacity style={styles.sendButton} onPress={addComment}>
+            <AppIcon
+              type="MaterialCommunityIcons"
+              name="send-outline"
+              size={20}
+              color="#FFFFFF"
+            />
+          </TouchableOpacity>
         </View>
-
-        <TextInput
-          value={comment}
-          onChangeText={setComment}
-          placeholder={t('write_comment')}
-          placeholderTextColor="#8A8D91"
-          style={styles.commentInput}
-        />
-
-        <TouchableOpacity style={styles.sendButton} onPress={addComment}>
-          <Paragraph style={styles.sendText}>➤</Paragraph>
-        </TouchableOpacity>
-      </View>
+      </KeyboardAvoidingView>
     </Container>
   );
 };
@@ -143,14 +155,14 @@ const styles = StyleSheet.create({
     width: 44,
     height: 44,
     borderRadius: 22,
-    backgroundColor: '#114603',
+    backgroundColor: colors.primary,
     justifyContent: 'center',
     alignItems: 'center',
     marginRight: 12,
   },
 
   avatarText: {
-    color: '#FFF',
+    color: colors.textLight,
     fontWeight: '700',
     fontSize: 16,
   },
@@ -167,7 +179,7 @@ const styles = StyleSheet.create({
 
   timeText: {
     fontSize: 12,
-    color: '#65676B',
+    color: colors.placeholder,
   },
 
   postText: {
@@ -191,14 +203,14 @@ const styles = StyleSheet.create({
     width: 42,
     height: 42,
     borderRadius: 21,
-    backgroundColor: '#114603',
+    backgroundColor: colors.primary,
     justifyContent: 'center',
     alignItems: 'center',
     marginRight: 12,
   },
 
   commentAvatarText: {
-    color: '#FFF',
+    color: colors.textLight,
     fontWeight: '700',
   },
 
@@ -216,7 +228,7 @@ const styles = StyleSheet.create({
 
   commentTime: {
     fontSize: 12,
-    color: '#65676B',
+    color: colors.placeholder,
     marginBottom: 6,
     textAlign: 'left',
   },
@@ -224,7 +236,7 @@ const styles = StyleSheet.create({
   commentText: {
     fontSize: 15,
     lineHeight: 22,
-    color: '#222',
+    color: colors.text,
     textAlign: 'left',
   },
 
@@ -233,16 +245,16 @@ const styles = StyleSheet.create({
     alignItems: 'center',
     paddingHorizontal: 16,
     paddingVertical: 20,
-    backgroundColor: '#FFF',
+    backgroundColor: colors.textLight,
     borderTopWidth: 1,
-    borderTopColor: '#E4E6EB',
+    borderTopColor: colors.border,
   },
 
   myAvatar: {
     width: 38,
     height: 38,
     borderRadius: 19,
-    backgroundColor: '#114603',
+    backgroundColor: colors.primary,
     justifyContent: 'center',
     alignItems: 'center',
     marginRight: 10,
@@ -250,26 +262,20 @@ const styles = StyleSheet.create({
 
   commentInput: {
     flex: 1,
-    backgroundColor: '#F0F2F5',
+    backgroundColor: colors.background,
     borderRadius: 22,
     paddingHorizontal: 16,
     height: 50,
-    color: '#000',
+    color: colors.text,
   },
 
   sendButton: {
     width: 42,
     height: 42,
     borderRadius: 21,
-    backgroundColor: '#1877F2',
+    backgroundColor: colors.info,
     justifyContent: 'center',
     alignItems: 'center',
     marginLeft: 10,
-  },
-
-  sendText: {
-    color: '#FFF',
-    fontSize: 18,
-    fontWeight: '700',
   },
 });

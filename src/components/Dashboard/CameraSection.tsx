@@ -6,8 +6,10 @@ import { useNavigation } from '@react-navigation/native';
 import AppIcon from '@components/AppIcon/AppIcon';
 import AppCamera from '@components/AppCamera/AppCamera';
 import LeafHelpModal from '@components/AppCamera/LeafHelpModal';
-
+import colors from '@themes/colors';
 import { Card, Headline, Paragraph } from '@components/ui';
+import { Rbutton } from '@components/common/Rbutton';
+import { useTranslation } from 'react-i18next';
 
 type Props = {
   data: {
@@ -19,7 +21,7 @@ type Props = {
 
 const CameraSection = ({ data }: Props) => {
   const [showHelp, setShowHelp] = useState(false);
-
+  const { t } = useTranslation();
   const navigation = useNavigation<any>();
 
   const camera = AppCamera({
@@ -50,33 +52,21 @@ const CameraSection = ({ data }: Props) => {
 
   return (
     <>
-      <Headline>{data.title}</Headline>
-
-      <Paragraph
-        size="base"
-        style={{
-          textAlign: 'left',
-        }}
-      >
-        {data.description}
-      </Paragraph>
-
-      <TouchableOpacity
-        onPress={() => setShowHelp(true)}
-        style={{
-          marginTop: 10,
-          marginBottom: 12,
-        }}
-      >
-        <Paragraph
-          style={{
-            color: '#1565C0',
-            fontWeight: '700',
-          }}
+      <View style={styles.headerRow}>
+        <Headline>{data.title}</Headline>
+        <TouchableOpacity
+          activeOpacity={0.8}
+          onPress={() => setShowHelp(true)}
+          style={styles.helpButton}
         >
-          📷 ছবি তোলার নির্দেশনা
-        </Paragraph>
-      </TouchableOpacity>
+          <AppIcon
+            type="MaterialCommunityIcons"
+            name="help-circle-outline"
+            size={24}
+            color={colors.info}
+          />
+        </TouchableOpacity>
+      </View>
 
       <Card variant="contained">
         <View style={styles.cameraTopRow}>
@@ -94,16 +84,17 @@ const CameraSection = ({ data }: Props) => {
                 fontWeight: '700',
               }}
             >
-              এইভাবে ছবি তুলুন
+              {t('take_photo_example')}
             </Paragraph>
 
             <Paragraph
               size="xs"
+              lineHeight={15}
               style={{
                 textAlign: 'center',
               }}
             >
-              ভালো আলোতে পাতাটি পরিষ্কারভাবে ধরুন
+              {t('good_light_tip')}
             </Paragraph>
           </Card>
 
@@ -113,14 +104,16 @@ const CameraSection = ({ data }: Props) => {
               type="MaterialCommunityIcons"
               name="camera-plus-outline"
               size={52}
-              color="#1565C0"
+              color={colors.info}
             />
 
-            <Text style={styles.previewText}>আক্রান্ত অংশের ছবি তুলুন</Text>
+            <Paragraph size="sm" lineHeight={20} style={styles.previewText}>
+              {t('capture_damaged_area')}
+            </Paragraph>
           </View>
         </View>
 
-        <TouchableOpacity
+        {/* <TouchableOpacity
           activeOpacity={0.9}
           style={styles.openCameraButton}
           onPress={camera.showPicker}
@@ -128,7 +121,16 @@ const CameraSection = ({ data }: Props) => {
           <Paragraph style={styles.openCameraButtonText}>
             {data.buttonText}
           </Paragraph>
-        </TouchableOpacity>
+        </TouchableOpacity> */}
+        <Rbutton
+          title={data.buttonText}
+          buttonColor="#1565C0"
+          onPress={camera.showPicker}
+          style={{
+            marginTop: 10,
+            borderRadius: 18,
+          }}
+        />
       </Card>
 
       <LeafHelpModal visible={showHelp} onClose={() => setShowHelp(false)} />
@@ -149,7 +151,7 @@ const styles = StyleSheet.create({
 
   cameraPreviewCard: {
     flex: 1,
-    backgroundColor: '#F4F7F1',
+    backgroundColor: colors.background,
     alignItems: 'center',
     justifyContent: 'center',
   },
@@ -161,30 +163,29 @@ const styles = StyleSheet.create({
 
   previewBox: {
     flex: 1,
-    height: 180,
+    height: 160,
     borderRadius: 24,
     borderWidth: 2,
-    borderColor: '#CBD5E1',
+    borderColor: colors.border,
     borderStyle: 'dashed',
     justifyContent: 'center',
     alignItems: 'center',
-    backgroundColor: '#F8FAFC',
+    backgroundColor: colors.background,
     overflow: 'hidden',
   },
 
   previewText: {
     marginTop: 10,
-    fontSize: 12,
-    fontWeight: '600',
-    color: '#475569',
+
+    color: colors.textSecondary,
     textAlign: 'center',
-    paddingHorizontal: 10,
+    // paddingHorizontal: 10,
   },
 
   openCameraButton: {
     marginTop: 24,
     width: '100%',
-    backgroundColor: '#1565C0',
+    backgroundColor: colors.info,
     paddingVertical: 16,
     borderRadius: 18,
     justifyContent: 'center',
@@ -192,8 +193,34 @@ const styles = StyleSheet.create({
   },
 
   openCameraButtonText: {
-    color: '#FFFFFF',
+    color: colors.textLight,
     fontSize: 16,
     fontWeight: '800',
+  },
+  guideRow: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'center',
+    width: '100%',
+  },
+
+  guideText: {
+    color: colors.info,
+    fontWeight: '700',
+    marginLeft: 6,
+  },
+  headerRow: {
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    alignItems: 'center',
+    marginBottom: 10,
+  },
+
+  helpButton: {
+    width: 36,
+    height: 36,
+    borderRadius: 18,
+    justifyContent: 'center',
+    alignItems: 'center',
   },
 });

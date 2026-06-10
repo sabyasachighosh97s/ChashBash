@@ -26,7 +26,7 @@ const EmptyScreen = () => {
     <View
       style={{
         flex: 1,
-        backgroundColor: '#F4F7F1',
+        backgroundColor: colors.background,
       }}
     />
   );
@@ -35,7 +35,7 @@ const EmptyScreen = () => {
 const CustomTabBar = ({ state, navigation }: BottomTabBarProps) => {
   const { t } = useTranslation();
   const getTabIcon = (routeName: string, focused: boolean) => {
-    const color = focused ? '#A4E45F' : '#9FB3A5';
+    const color = focused ? colors.accent : colors.textMuted;
 
     switch (routeName) {
       case 'Home':
@@ -104,7 +104,7 @@ const CustomTabBar = ({ state, navigation }: BottomTabBarProps) => {
                 type="MaterialCommunityIcons"
                 name="plus"
                 size={28}
-                color="#173522"
+                color={colors.primary}
               />
             </TouchableOpacity>
           );
@@ -124,7 +124,7 @@ const CustomTabBar = ({ state, navigation }: BottomTabBarProps) => {
               style={[
                 styles.bottomTabText,
                 {
-                  color: isFocused ? '#A4E45F' : '#9FB3A5',
+                  color: isFocused ? colors.accent : colors.textMuted,
                 },
               ]}
             >
@@ -164,7 +164,7 @@ const styles = StyleSheet.create({
     right: 18,
     height: 60,
 
-    backgroundColor: '#21432D',
+    backgroundColor: colors.bottomBar,
     borderRadius: 34,
     flexDirection: 'row',
     justifyContent: 'space-around',
@@ -187,11 +187,11 @@ const styles = StyleSheet.create({
     width: 50,
     height: 50,
     borderRadius: 30,
-    backgroundColor: '#A4E45F',
+    backgroundColor: colors.accent,
     justifyContent: 'center',
     alignItems: 'center',
     marginTop: -30,
     borderWidth: 5,
-    borderColor: '#173522',
+    borderColor: colors.primary,
   },
 });

@@ -1,18 +1,18 @@
 import React from 'react';
 
-import {
-  Button,
-  ButtonProps,
-  useTheme,
-} from 'react-native-paper';
+import { Button, ButtonProps, useTheme } from 'react-native-paper';
 
-interface CustomButtonProps extends ButtonProps {
+interface CustomButtonProps extends Omit<ButtonProps, 'children'> {
   title: string;
+  buttonColor?: string;
+  textColor?: string;
 }
 
 export const Rbutton = ({
   title,
   style,
+  buttonColor,
+  textColor,
   contentStyle,
   labelStyle,
   ...props
@@ -22,8 +22,8 @@ export const Rbutton = ({
   return (
     <Button
       mode="contained"
-      buttonColor={theme.colors.primary}
-      textColor="#fff"
+      buttonColor={buttonColor || theme.colors.primary}
+      textColor={textColor || '#fff'}
       style={[
         {
           borderRadius: 12,
