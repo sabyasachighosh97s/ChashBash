@@ -3,7 +3,7 @@
   "compilerOptions": {
     "types": ["jest"],
     "baseUrl": ".",
-    "ignoreDeprecations": "6.0",
+
     "typeRoots": ["./src/types", "./node_modules/@types"],
     "paths": {
       "@themes/*": ["src/themes/*"],

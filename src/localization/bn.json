@@ -77,5 +77,11 @@
   "got_it": "পেয়েছি",
   "take_photo_example": "এইভাবে ছবি তুলুন",
   "good_light_tip": "ভালো আলোতে পাতাটি পরিষ্কারভাবে ধরুন",
-  "capture_damaged_area": "আক্রান্ত অংশের ছবি তুলুন"
+  "capture_damaged_area": "আক্রান্ত অংশের ছবি তুলুন",
+  "camera_starting": "ক্যামেরা চালু হচ্ছে",
+  "please_wait": "অনুগ্রহ করে অপেক্ষা করুন...",
+  "capture_crop_photo": "ফসলের ছবি তুলুন",
+  "capture_crop_subtitle": "পাতাটি ফ্রেমের ভিতরে রাখুন এবং পরিষ্কার ছবি তুলুন",
+  "image_ready": "ছবি প্রস্তুত",
+  "start_analysis": "রোগ শনাক্ত করতে বিশ্লেষণ শুরু করুন"
 }

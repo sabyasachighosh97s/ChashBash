@@ -4,7 +4,7 @@ import { Image, StyleSheet, Text, TouchableOpacity, View } from 'react-native';
 import { useNavigation } from '@react-navigation/native';
 
 import AppIcon from '@components/AppIcon/AppIcon';
-import AppCamera from '@components/AppCamera/AppCamera';
+// import AppCamera from '@components/AppCamera/AppCamera';
 import LeafHelpModal from '@components/AppCamera/LeafHelpModal';
 import colors from '@themes/colors';
 import { Card, Headline, Paragraph } from '@components/ui';
@@ -24,48 +24,36 @@ const CameraSection = ({ data }: Props) => {
   const { t } = useTranslation();
   const navigation = useNavigation<any>();
 
-  const camera = AppCamera({
-    onImageSelected: async image => {
-      try {
-        /**
-         * TODO:
-         * Replace this dummy response with your API response
-         */
+  // const camera = AppCamera({
+  //   onImageSelected: async image => {
+  //     try {
+  //       /**
+  //        * TODO:
+  //        * Replace this dummy response with your API response
+  //        */
 
-        const diseaseResult = {
-          name: 'Leaf Blight',
-          severity: 'Medium',
-          description: 'Leaf blight is a fungal disease affecting crop leaves.',
-          treatment:
-            'Apply fungicide and remove infected leaves to prevent further spread.',
-        };
+  //       const diseaseResult = {
+  //         name: 'Leaf Blight',
+  //         severity: 'Medium',
+  //         description: 'Leaf blight is a fungal disease affecting crop leaves.',
+  //         treatment:
+  //           'Apply fungicide and remove infected leaves to prevent further spread.',
+  //       };
 
-        navigation.navigate('DiseaseResult', {
-          image,
-          disease: diseaseResult,
-        });
-      } catch (error) {
-        console.log('Disease Detection Error:', error);
-      }
-    },
-  });
+  //       navigation.navigate('DiseaseResult', {
+  //         image,
+  //         disease: diseaseResult,
+  //       });
+  //     } catch (error) {
+  //       console.log('Disease Detection Error:', error);
+  //     }
+  //   },
+  // });
 
   return (
     <>
       <View style={styles.headerRow}>
         <Headline>{data.title}</Headline>
-        <TouchableOpacity
-          activeOpacity={0.8}
-          onPress={() => setShowHelp(true)}
-          style={styles.helpButton}
-        >
-          <AppIcon
-            type="MaterialCommunityIcons"
-            name="help-circle-outline"
-            size={24}
-            color={colors.info}
-          />
-        </TouchableOpacity>
       </View>
 
       <Card variant="contained">
@@ -113,27 +101,16 @@ const CameraSection = ({ data }: Props) => {
           </View>
         </View>
 
-        {/* <TouchableOpacity
-          activeOpacity={0.9}
-          style={styles.openCameraButton}
-          onPress={camera.showPicker}
-        >
-          <Paragraph style={styles.openCameraButtonText}>
-            {data.buttonText}
-          </Paragraph>
-        </TouchableOpacity> */}
         <Rbutton
           title={data.buttonText}
           buttonColor="#1565C0"
-          onPress={camera.showPicker}
+          onPress={() => navigation.navigate('VisionCamera')}
           style={{
             marginTop: 10,
             borderRadius: 18,
           }}
         />
       </Card>
-
-      <LeafHelpModal visible={showHelp} onClose={() => setShowHelp(false)} />
     </>
   );
 };
