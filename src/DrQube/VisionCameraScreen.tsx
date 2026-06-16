@@ -8,6 +8,7 @@ import {
   Image,
   PermissionsAndroid,
   Platform,
+  Alert,
 } from 'react-native';
 import { Card, Headline, Paragraph } from '@components/ui';
 import { useNavigation } from '@react-navigation/native';
@@ -30,11 +31,35 @@ export default function VisionCameraScreen() {
   const [showIntroText, setShowIntroText] = useState(true);
   const [capturedImage, setCapturedImage] = useState<string | null>(null);
   const [flashEnabled, setFlashEnabled] = useState(false);
+  const [hasPermission, setHasPermission] = useState(false);
   const device = useCameraDevice('back');
   const camera = useRef<CameraRef>(null);
   const photoOutput = usePhotoOutput();
   const frameWidth = useRef(new Animated.Value(260)).current;
   const frameHeight = useRef(new Animated.Value(320)).current;
+
+  useEffect(() => {
+    checkCameraPermission();
+  }, []);
+
+  const checkCameraPermission = async () => {
+    try {
+      const granted = await PermissionsAndroid.check(
+        PermissionsAndroid.PERMISSIONS.CAMERA,
+      );
+
+      setHasPermission(granted);
+
+      console.log('Camera Permission =>', granted);
+
+      if (!granted) {
+        Alert.alert('Permission Required', 'Please allow camera permission.');
+      }
+    } catch (error) {
+      console.log(error);
+    }
+  };
+
   useEffect(() => {
     const timer = setTimeout(() => {
       setShowIntroText(false);
@@ -93,14 +118,37 @@ export default function VisionCameraScreen() {
     });
   };
   const requestGalleryPermission = async () => {
-    if (Platform.OS === 'android') {
-      await PermissionsAndroid.request(
-        PermissionsAndroid.PERMISSIONS.READ_MEDIA_IMAGES,
+    if (Platform.OS !== 'android') {
+      return true;
+    }
+
+    try {
+      if (Platform.Version >= 33) {
+        const result = await PermissionsAndroid.request(
+          PermissionsAndroid.PERMISSIONS.READ_MEDIA_IMAGES,
+        );
+
+        return result === PermissionsAndroid.RESULTS.GRANTED;
+      }
+
+      const result = await PermissionsAndroid.request(
+        PermissionsAndroid.PERMISSIONS.READ_EXTERNAL_STORAGE,
       );
+
+      return result === PermissionsAndroid.RESULTS.GRANTED;
+    } catch (error) {
+      console.log(error);
+      return false;
     }
   };
   const openGallery = async () => {
-    await requestGalleryPermission();
+    console.log('OPEN GALLERY CLICKED');
+
+    const granted = await requestGalleryPermission();
+
+    if (!granted) {
+      return;
+    }
 
     try {
       const result = await launchImageLibrary({
@@ -122,7 +170,13 @@ export default function VisionCameraScreen() {
       console.log('Gallery Error:', error);
     }
   };
-
+  if (!hasPermission) {
+    return (
+      <View style={styles.loader}>
+        <Text style={{ color: '#fff' }}>Waiting for Camera Permission...</Text>
+      </View>
+    );
+  }
   if (!device) {
     return (
       <View style={styles.loader}>
