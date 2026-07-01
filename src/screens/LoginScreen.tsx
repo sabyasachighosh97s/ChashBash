@@ -146,7 +146,7 @@ const LoginScreen: React.FC = () => {
 
               <TouchableOpacity
                 activeOpacity={0.8}
-                onPress={() => navigation.navigate('ShortRegistration')}
+                onPress={() => navigation.navigate('RegistrationScreen')}
               >
                 <Paragraph
                   style={[

@@ -12,6 +12,7 @@ import WeatherDetailsScreen from '@screens/WeatherDetailsScreen';
 import ShortRegistrationScreen from '@screens/ShortRegistrationScreen';
 import CropRegistrationScreen from '@screens/CropRegistrationScreen';
 import OtpVerificationScreen from '@screens/OtpVerificationScreen';
+import RegistrationScreen from '@screens/RegistrationScreen';
 
 const Stack = createNativeStackNavigator();
 
@@ -32,6 +33,8 @@ const RootStackNavigator = () => {
         name="CropRegistration"
         component={CropRegistrationScreen}
       />
+      <Stack.Screen name="RegistrationScreen" component={RegistrationScreen} />
+
       <Stack.Screen name="Login" component={LoginScreen} />
       <Stack.Screen name="OtpVerification" component={OtpVerificationScreen} />
       <Stack.Screen name="DiseaseResult" component={DiseaseResultScreen} />
