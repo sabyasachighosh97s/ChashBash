@@ -10,6 +10,7 @@ import {
 import { Paragraph } from '@components/ui';
 import AppIcon from '@components/AppIcon/AppIcon';
 import colors from '@themes/colors';
+import { useNavigation } from '@react-navigation/native';
 
 type ForecastItem = {
   day: string;
@@ -40,6 +41,7 @@ const WeatherForecastCard = ({
   setSelectedForecast,
 }: Props) => {
   const { t } = useTranslation();
+  const navigation = useNavigation<any>();
   const getWeatherIcon = (weatherType: 'sunny' | 'cloudy' | 'rain') => {
     switch (weatherType) {
       case 'sunny':
@@ -58,16 +60,35 @@ const WeatherForecastCard = ({
   return (
     <View style={styles.mainCard}>
       {/* LOCATION */}
-      <View style={styles.locationRow}>
-        <AppIcon
-          type="MaterialCommunityIcons"
-          name="map-marker"
-          size={14}
-          color={colors.textLight}
-        />
-        <Paragraph size="sm" style={styles.locationText}>
-          Kolkata, India
-        </Paragraph>
+      <View style={styles.headerRow}>
+        <View style={styles.locationRow}>
+          <AppIcon
+            type="MaterialCommunityIcons"
+            name="map-marker"
+            size={14}
+            color={colors.textLight}
+          />
+
+          <Paragraph size="sm" style={styles.locationText}>
+            Kolkata, India
+          </Paragraph>
+        </View>
+
+        <TouchableOpacity
+          onPress={() =>
+            navigation.navigate('WeatherDetails', {
+              forecastData,
+              selectedForecast,
+            })
+          }
+        >
+          <AppIcon
+            type="MaterialCommunityIcons"
+            name="arrow-right-circle"
+            size={28}
+            color={colors.textLight}
+          />
+        </TouchableOpacity>
       </View>
 
       {/* TEMP SECTION */}
@@ -282,7 +303,11 @@ const styles = StyleSheet.create({
     color: colors.textLight,
     fontWeight: '800',
   },
-
+  headerRow: {
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    alignItems: 'center',
+  },
   weatherDivider: {
     width: 1,
     backgroundColor: colors.glassBorderStrong,

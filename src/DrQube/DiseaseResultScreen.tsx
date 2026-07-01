@@ -1,15 +1,113 @@
-import React from 'react';
-import { Image, ScrollView, StyleSheet, View } from 'react-native';
+import React, { useEffect, useState } from 'react';
+import {
+  Image,
+  ScrollView,
+  StyleSheet,
+  View,
+  ActivityIndicator,
+  TextInput,
+  TouchableOpacity,
+} from 'react-native';
 
 import AppIcon from '@components/AppIcon/AppIcon';
 import { Card, Container, Headline, Paragraph } from '@components/ui';
 import { CustomStatusBar } from '@components/common/CustomStatusBar';
+import { generateDiseaseAnalysis } from '@services/geminiService';
+import { TextToSpeech } from '@utils/TextToSpeech';
 
 const DiseaseResultScreen = ({ route }: any) => {
   const { image, disease } = route.params;
 
+  const [prompt, setPrompt] = useState('');
+  const [aiAnalysis, setAiAnalysis] = useState('');
+  const [loading, setLoading] = useState(false);
+  const [severity, setSeverity] = useState('');
+  const [aiDiseaseName, setAiDiseaseName] = useState('');
+
+  const getBase64Image = async uri => {
+    const response = await fetch(uri);
+
+    const blob = await response.blob();
+
+    return new Promise((resolve, reject) => {
+      const reader = new FileReader();
+
+      reader.onloadend = () => {
+        if (typeof reader.result === 'string') {
+          resolve(reader.result.split(',')[1]);
+        } else {
+          reject('Failed');
+        }
+      };
+
+      reader.readAsDataURL(blob);
+    });
+  };
+
+  const handleGenerateAnalysis = async () => {
+    try {
+      setLoading(true);
+
+      const base64Image = await getBase64Image(image.uri);
+
+      const finalPrompt =
+        prompt.trim() ||
+        `
+ছবিটি বিশ্লেষণ করে বাংলায় উত্তর দাও।
+
+নিচের ৬টি শিরোনাম ব্যবহার করো:
+
+রোগের নাম:
+রোগের মাত্রা: (Low / Medium / High)
+রোগের বিবরণ:
+প্রধান লক্ষণ:
+রোগের কারণ:
+প্রতিকার:
+প্রতিরোধ ব্যবস্থা:
+
+নিয়ম:
+- রোগের মাত্রা অবশ্যই Low, Medium অথবা High হবে
+- প্রতিটি অংশ ১-২ লাইনের মধ্যে হবে
+- সর্বোচ্চ 120 শব্দ
+- Markdown ব্যবহার করবে না
+- Bullet ব্যবহার করবে না
+- সহজ কৃষকবান্ধব বাংলা ব্যবহার করবে
+`;
+
+      const result = await generateDiseaseAnalysis(base64Image, finalPrompt);
+      const severityMatch = result.match(
+        /রোগের মাত্রা\s*[:\-]\s*(Low|Medium|High)/i,
+      );
+
+      if (severityMatch?.[1]) {
+        setSeverity(severityMatch[1].trim());
+      }
+      const diseaseMatch = result.match(/রোগের নাম\s*:\s*(.*)/i);
+      if (diseaseMatch?.[1]) {
+        setAiDiseaseName(diseaseMatch[1].trim());
+      }
+      setAiAnalysis(result);
+
+      const cleanText = getCleanTextForSpeech(result);
+
+      TextToSpeech.stop();
+
+      setTimeout(() => {
+        TextToSpeech.speak(cleanText);
+      }, 300);
+    } catch (error) {
+      setSeverity('');
+      setAiDiseaseName('');
+      setAiAnalysis('বিশ্লেষণ করতে সমস্যা হয়েছে।');
+      console.log(error);
+
+      setAiAnalysis('বিশ্লেষণ করতে সমস্যা হয়েছে।');
+    } finally {
+      setLoading(false);
+    }
+  };
   const getSeverityColor = () => {
-    switch (disease.severity?.toLowerCase()) {
+    switch (severity?.toLowerCase()) {
       case 'high':
         return '#E53935';
 
@@ -20,18 +118,54 @@ const DiseaseResultScreen = ({ route }: any) => {
         return '#43A047';
     }
   };
+  const getCleanTextForSpeech = (text = '') => {
+    return text
+      .replace(/#/g, '')
+      .replace(/\*/g, '')
+      .replace(/`/g, '')
+      .replace(/---/g, '')
+      .replace(/:/g, '। ')
+      .replace(/\n+/g, ' ')
+      .replace(/\s+/g, ' ')
+      .trim();
+  };
+  useEffect(() => {
+    return () => {
+      TextToSpeech.stop();
+    };
+  }, []);
+
+  const playAudio = () => {
+    TextToSpeech.stop();
+
+    if (!aiAnalysis) {
+      TextToSpeech.speak('এখনও কোনো এআই বিশ্লেষণ তৈরি করা হয়নি।');
+
+      return;
+    }
+
+    const cleanText = getCleanTextForSpeech(aiAnalysis);
+
+    TextToSpeech.speak(cleanText);
+  };
+
+  const stopAudio = () => {
+    TextToSpeech.stop();
+  };
 
   return (
     <Container>
       <CustomStatusBar />
+
       <Headline size="xl" style={styles.title}>
         রোগ শনাক্তকরণ ফলাফল
       </Headline>
+
       <ScrollView
         showsVerticalScrollIndicator={false}
         contentContainerStyle={styles.content}
       >
-        {/* Image Section */}
+        {/* IMAGE */}
         <Card style={styles.imageCard}>
           <Image
             source={{ uri: image.uri }}
@@ -40,101 +174,259 @@ const DiseaseResultScreen = ({ route }: any) => {
           />
 
           <View style={styles.diseaseBadge}>
-            <Paragraph
-              style={{
-                color: '#fff',
-                fontWeight: '700',
-              }}
-            >
-              {disease.name}
+            <Paragraph style={styles.badgeText}>
+              {aiDiseaseName || 'রোগ শনাক্ত হয়নি'}
             </Paragraph>
           </View>
         </Card>
 
-        {/* Severity */}
-        <View
-          style={[
-            styles.severityBadge,
-            {
-              backgroundColor: getSeverityColor(),
-            },
-          ]}
+        {/* SEVERITY */}
+
+        <Card
+          style={{
+            marginHorizontal: 12,
+            marginBottom: 16,
+            padding: 14,
+            borderRadius: 20,
+          }}
         >
-          <Paragraph
+          <View
             style={{
-              color: '#fff',
-              fontWeight: '700',
+              flexDirection: 'row',
+              justifyContent: 'space-between',
             }}
           >
-            Severity: {disease.severity}
-          </Paragraph>
+            {/* Disease Name */}
+            <View style={{ flex: 1 }}>
+              <Paragraph
+                style={{
+                  color: '#64748B',
+                  fontSize: 12,
+                  marginBottom: 4,
+                }}
+              >
+                রোগ
+              </Paragraph>
+
+              <Paragraph
+                style={{
+                  fontWeight: '700',
+                  color: '#0F172A',
+                }}
+              >
+                {aiDiseaseName || 'Unknown'}
+              </Paragraph>
+            </View>
+
+            {/* Severity */}
+            <View style={{ flex: 1, alignItems: 'center' }}>
+              <Paragraph
+                style={{
+                  color: '#64748B',
+                  fontSize: 12,
+                  marginBottom: 4,
+                }}
+              >
+                Severity
+              </Paragraph>
+
+              <Paragraph
+                style={{
+                  color: getSeverityColor(),
+                  fontWeight: '700',
+                }}
+              >
+                {severity || 'Unknown'}
+              </Paragraph>
+            </View>
+
+            {/* AI Status */}
+            <View style={{ flex: 1, alignItems: 'flex-end' }}>
+              <Paragraph
+                style={{
+                  color: '#64748B',
+                  fontSize: 12,
+                  marginBottom: 4,
+                }}
+              >
+                AI Status
+              </Paragraph>
+
+              <Paragraph
+                style={{
+                  color: aiAnalysis ? '#16A34A' : '#DC2626',
+                  fontWeight: '700',
+                }}
+              >
+                {aiAnalysis ? 'Ready' : 'Pending'}
+              </Paragraph>
+            </View>
+          </View>
+        </Card>
+
+        {/* PROMPT SECTION */}
+        <Card style={styles.sectionCard}>
+          <View style={styles.sectionHeader}>
+            <AppIcon
+              type="MaterialCommunityIcons"
+              name="form-textbox"
+              size={24}
+              color="#007AFF"
+            />
+
+            <Headline style={styles.sectionTitle}>আপনার প্রশ্ন লিখুন</Headline>
+          </View>
+
+          <TextInput
+            style={styles.promptInput}
+            multiline
+            placeholder="যেমন: এই রোগের কারণ ও প্রতিকার বাংলায় বিস্তারিত বলুন"
+            value={prompt}
+            onChangeText={setPrompt}
+          />
+
+          <TouchableOpacity
+            style={styles.submitButton}
+            disabled={loading}
+            onPress={handleGenerateAnalysis}
+          >
+            <Paragraph style={styles.submitButtonText}>
+              {loading ? 'বিশ্লেষণ হচ্ছে...' : 'Submit'}
+            </Paragraph>
+          </TouchableOpacity>
+        </Card>
+        <View
+          style={{
+            flexDirection: 'row',
+            justifyContent: 'center',
+            marginBottom: 15,
+          }}
+        >
+          <TouchableOpacity
+            style={{
+              backgroundColor: aiAnalysis ? '#2E7D32' : '#94A3B8',
+              padding: 12,
+              borderRadius: 12,
+              marginRight: 10,
+            }}
+            onPress={playAudio}
+            disabled={!aiAnalysis}
+          >
+            <AppIcon
+              type="MaterialCommunityIcons"
+              name="volume-high"
+              size={26}
+              color="#fff"
+            />
+          </TouchableOpacity>
+
+          <TouchableOpacity
+            style={{
+              backgroundColor: aiAnalysis ? '#E53935' : '#94A3B8',
+              padding: 12,
+              borderRadius: 12,
+            }}
+            onPress={stopAudio}
+          >
+            <AppIcon
+              type="MaterialCommunityIcons"
+              name="stop-circle"
+              size={26}
+              color="#fff"
+            />
+          </TouchableOpacity>
         </View>
+        {/* RESULT */}
+        {loading ? (
+          <Card style={styles.sectionCard}>
+            <View style={styles.loadingContainer}>
+              <ActivityIndicator size="large" color="#007AFF" />
 
-        {/* Disease Info */}
-        <Card style={styles.sectionCard}>
-          <View style={styles.sectionHeader}>
-            <AppIcon
-              type="MaterialCommunityIcons"
-              name="leaf"
-              size={22}
-              color="#2E7D32"
-            />
+              <Paragraph style={styles.loadingText}>
+                এআই বিশ্লেষণ করছে...
+              </Paragraph>
+            </View>
+          </Card>
+        ) : aiAnalysis ? (
+          <Card style={styles.sectionCard}>
+            <View style={styles.sectionHeader}>
+              <AppIcon
+                type="MaterialCommunityIcons"
+                name="robot-outline"
+                size={24}
+                color="#007AFF"
+              />
 
-            <Paragraph style={styles.sectionTitle}>রোগের বিবরণ</Paragraph>
-          </View>
+              <Headline style={styles.sectionTitle}>
+                বিস্তারিত এআই বিশ্লেষণ
+              </Headline>
+            </View>
 
-          <Paragraph style={styles.bodyText}>{disease.description}</Paragraph>
-        </Card>
+            {aiAnalysis.split('\n').map((item, index) => {
+              const isHeading =
+                item.includes('রোগের নাম') ||
+                item.includes('রোগের মাত্রা') ||
+                item.includes('রোগের বিবরণ') ||
+                item.includes('প্রধান লক্ষণ') ||
+                item.includes('রোগের কারণ') ||
+                item.includes('প্রতিকার') ||
+                item.includes('প্রতিরোধ ব্যবস্থা');
 
-        {/* Treatment */}
-        <Card style={styles.sectionCard}>
-          <View style={styles.sectionHeader}>
-            <AppIcon
-              type="MaterialCommunityIcons"
-              name="medical-bag"
-              size={22}
-              color="#1565C0"
-            />
+              if (isHeading && item.includes(':')) {
+                const [title, ...rest] = item.split(':');
 
-            <Paragraph style={styles.sectionTitle}>
-              চিকিৎসা ও প্রতিকার
-            </Paragraph>
-          </View>
+                return (
+                  <Paragraph
+                    key={index}
+                    style={{
+                      color: '#334155',
+                      marginBottom: 8,
+                      lineHeight: 24,
 
-          <Paragraph style={styles.bodyText}>{disease.treatment}</Paragraph>
-        </Card>
+                      // justifyContent: 'flex-start',
+                      // alignItems: 'flex-start',
+                      // alignSelf: 'flex-start',
+                    }}
+                  >
+                    <Paragraph
+                      style={{
+                        textAlign: 'auto',
+                        fontWeight: '700',
+                        color: '#0F172A',
+                      }}
+                    >
+                      {title}:
+                    </Paragraph>
+                    <Paragraph
+                      style={{
+                        fontWeight: '400',
+                        color: '#475569',
+                      }}
+                    >
+                      {rest.join(':').trim()}
+                    </Paragraph>
+                  </Paragraph>
+                );
+              }
 
-        {/* Recommendations */}
-        <Card style={styles.sectionCard}>
-          <View style={styles.sectionHeader}>
-            <AppIcon
-              type="MaterialCommunityIcons"
-              name="lightbulb-on"
-              size={22}
-              color="#F9A825"
-            />
-
-            <Paragraph style={styles.sectionTitle}>
-              কৃষকের জন্য পরামর্শ
-            </Paragraph>
-          </View>
-
-          <Paragraph style={styles.tipText}>
-            • আক্রান্ত পাতা দ্রুত অপসারণ করুন
-          </Paragraph>
-
-          <Paragraph style={styles.tipText}>
-            • ক্ষেত পরিষ্কার ও শুকনো রাখুন
-          </Paragraph>
-
-          <Paragraph style={styles.tipText}>
-            • প্রয়োজন হলে অনুমোদিত ছত্রাকনাশক ব্যবহার করুন
-          </Paragraph>
-
-          <Paragraph style={styles.tipText}>
-            • আক্রান্ত গাছ নিয়মিত পর্যবেক্ষণ করুন
-          </Paragraph>
-        </Card>
+              return (
+                <Paragraph
+                  key={index}
+                  style={{
+                    color: '#475569',
+                    marginBottom: 8,
+                    lineHeight: 24,
+                    // justifyContent: 'flex-start',
+                    // alignItems: 'flex-start',
+                    // alignSelf: 'flex-start',
+                  }}
+                >
+                  {item}
+                </Paragraph>
+              );
+            })}
+          </Card>
+        ) : null}
       </ScrollView>
     </Container>
   );
@@ -149,6 +441,7 @@ const styles = StyleSheet.create({
     marginBottom: 16,
     marginHorizontal: 16,
   },
+
   content: {
     paddingBottom: 40,
   },
@@ -175,6 +468,11 @@ const styles = StyleSheet.create({
     borderRadius: 20,
   },
 
+  badgeText: {
+    color: '#fff',
+    fontWeight: '700',
+  },
+
   severityBadge: {
     alignSelf: 'center',
     paddingHorizontal: 18,
@@ -184,32 +482,60 @@ const styles = StyleSheet.create({
   },
 
   sectionCard: {
+    marginHorizontal: 12,
     marginBottom: 16,
     padding: 18,
-    marginHorizontal: 12,
     borderRadius: 20,
   },
 
   sectionHeader: {
     flexDirection: 'row',
     alignItems: 'center',
-    marginBottom: 10,
+    marginBottom: 12,
   },
 
   sectionTitle: {
     marginLeft: 10,
-    fontSize: 16,
+    fontSize: 18,
+    fontWeight: '700',
+  },
+
+  promptInput: {
+    minHeight: 120,
+    borderWidth: 1,
+    borderColor: '#D1D5DB',
+    borderRadius: 12,
+    padding: 12,
+    marginBottom: 15,
+    textAlignVertical: 'top',
+  },
+
+  submitButton: {
+    backgroundColor: '#007AFF',
+    paddingVertical: 14,
+    borderRadius: 12,
+    alignItems: 'center',
+  },
+
+  submitButtonText: {
+    color: '#fff',
     fontWeight: '700',
   },
 
   bodyText: {
     lineHeight: 24,
     color: '#475569',
+    fontSize: 15,
   },
 
-  tipText: {
-    marginBottom: 8,
-    lineHeight: 22,
-    color: '#334155',
+  loadingContainer: {
+    alignItems: 'center',
+    paddingVertical: 30,
+  },
+
+  loadingText: {
+    marginTop: 14,
+    color: '#64748B',
+    textAlign: 'center',
   },
 });

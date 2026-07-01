@@ -33,6 +33,10 @@ export default function VisionCameraScreen() {
   const [flashEnabled, setFlashEnabled] = useState(false);
   const [hasPermission, setHasPermission] = useState(false);
   const device = useCameraDevice('back');
+  useEffect(() => {
+    console.log('Device:', device);
+    console.log('Has Flash:', device?.hasFlash);
+  }, [device]);
   const camera = useRef<CameraRef>(null);
   const photoOutput = usePhotoOutput();
   const frameWidth = useRef(new Animated.Value(260)).current;
@@ -205,6 +209,7 @@ export default function VisionCameraScreen() {
           device={device}
           outputs={[photoOutput]}
           isActive={true}
+          // torch={flashEnabled ? 'on' : 'off'}
         />
       )}
       <View style={styles.overlay} />

@@ -1,42 +1,41 @@
-import React, { useMemo } from 'react';
-import { StyleSheet, ScrollView, View } from 'react-native';
+import React from 'react';
+import {
+  Image,
+  ScrollView,
+  StyleSheet,
+  View,
+  TouchableOpacity,
+} from 'react-native';
 import { Card, Button, useTheme } from 'react-native-paper';
+import { useNavigation } from '@react-navigation/native';
 import { useForm } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
-import { useNavigation } from '@react-navigation/native';
 import z from 'zod';
-import { BackgroundImage } from '../components/common/BackgroundImage';
-import { CustomStatusBar } from '../components/common/CustomStatusBar';
-import backgroundImage from '../assets/images/background.jpg';
 import { useTranslation } from 'react-i18next';
+
 import Container from '@components/Container/Container';
 import { CustomCard } from '@components/cards/CustomCard';
-import { CustomToast } from '@components/Toast';
-import Headline from '@components/common/Headline';
-import { Paragraph } from '@components/ui';
 import FormInput from '@components/forms/FormInput';
-import FormdownInput from '@components/forms/FormdownInput';
+import { Paragraph } from '@components/ui';
+import { CustomToast } from '@components/Toast';
+import { CustomStatusBar } from '@components/common/CustomStatusBar';
+
 import Logo from '../assets/images/Logo.png';
-import { Image } from 'react-native';
+
 const schema = z.object({
-  company: z.string().min(1, 'Please select company'),
-
-  email: z
+  mobileNumber: z
     .string()
-    .min(1, 'Email / Mobile required')
-    .email('Invalid email address'),
-
-  password: z.string().min(6, 'Password must be at least 6 characters'),
-
-  language: z.string().min(1, 'Please select language'),
+    .min(10, 'Please enter a valid mobile number')
+    .max(10, 'Please enter a valid mobile number')
+    .regex(/^[0-9]+$/, 'Only numbers are allowed'),
 });
 
 type FormData = z.infer<typeof schema>;
 
 const LoginScreen: React.FC = () => {
-  const { t, i18n } = useTranslation();
-  const theme = useTheme();
   const navigation = useNavigation<any>();
+  const theme = useTheme();
+  const { t } = useTranslation();
 
   const {
     control,
@@ -46,52 +45,36 @@ const LoginScreen: React.FC = () => {
     resolver: zodResolver(schema),
 
     defaultValues: {
-      company: '',
-      email: '',
-      password: '',
-      language: '',
+      mobileNumber: '',
     },
 
     mode: 'onChange',
     reValidateMode: 'onChange',
   });
 
-  const companyOptions = useMemo(
-    () => [
-      {
-        label: 'ChashBash Agro',
-        value: 'chashbash',
-      },
-      {
-        label: 'GreenQube',
-        value: 'greenqube',
-      },
-    ],
-    [],
-  );
-
-  const languageOptions = useMemo(
-    () => [
-      {
-        label: t('english'),
-        value: 'en',
-      },
-      {
-        label: t('bangla'),
-        value: 'bn',
-      },
-    ],
-    [],
-  );
+  /*
+  ============================================
+  GET OTP
+  API Later
+  ============================================
+  */
 
   const onSubmit = (data: FormData) => {
-    console.log(data);
+    console.log('Mobile Number =>', data.mobileNumber);
 
-    CustomToast.success(t('login_successful'));
+    /*
+      Later
 
-    navigation.replace('MainTabs');
+      await sendOtpApi(data.mobileNumber)
+
+    */
+
+    CustomToast.success('OTP sent successfully');
+
+    navigation.navigate('OtpVerification', {
+      mobileNumber: data.mobileNumber,
+    });
   };
-
   return (
     <Container>
       <CustomStatusBar />
@@ -99,62 +82,44 @@ const LoginScreen: React.FC = () => {
       <ScrollView
         contentContainerStyle={styles.container}
         keyboardShouldPersistTaps="handled"
+        showsVerticalScrollIndicator={false}
       >
         <CustomCard>
           <Card.Content>
             <View style={styles.headerContainer}>
-              <View style={styles.logoContainer}>
-                <Image source={Logo} style={styles.logo} resizeMode="contain" />
-              </View>
+              <Image source={Logo} style={styles.logo} resizeMode="contain" />
 
               <Paragraph
-                lineHeight={20}
-                // variant="body"
-                style={[styles.subTitle, { color: theme.colors.primary }]}
+                style={[
+                  styles.title,
+                  {
+                    color: theme.colors.primary,
+                  },
+                ]}
               >
-                {t('smart_farming_platform')}
+                Welcome to ChashBash
               </Paragraph>
 
               <Paragraph
-                // variant="body"
-                style={[styles.description, { color: theme.colors.onSurface }]}
+                style={[
+                  styles.description,
+                  {
+                    color: theme.colors.onSurfaceVariant,
+                  },
+                ]}
               >
-                {t('app_description')}
+                Enter your mobile number to continue
               </Paragraph>
             </View>
 
-            <FormdownInput
-              control={control}
-              name="company"
-              labelText={t('company_name')}
-              data={companyOptions}
-              error={errors.company}
-            />
-
             <FormInput
               control={control}
-              name="email"
-              label={t('email_mobile')}
-              keyboardType="email-address"
-              icon="email-outline"
-              error={errors.email}
-            />
-
-            <FormInput
-              control={control}
-              name="password"
-              label={t('password')}
-              secureTextEntry
-              icon="lock-outline"
-              error={errors.password}
-            />
-
-            <FormdownInput
-              control={control}
-              name="language"
-              labelText={t('language')}
-              data={languageOptions}
-              error={errors.language}
+              name="mobileNumber"
+              label="Mobile Number"
+              keyboardType="number-pad"
+              maxLength={10}
+              icon="phone-outline"
+              error={errors.mobileNumber}
             />
           </Card.Content>
 
@@ -164,22 +129,45 @@ const LoginScreen: React.FC = () => {
               style={styles.loginButton}
               onPress={handleSubmit(onSubmit)}
             >
-              {t('login')}
+              Get OTP
             </Button>
 
-            <Button mode="text" onPress={() => navigation.navigate('MainTabs')}>
-              {t('continue_guest')}
-            </Button>
+            <View style={styles.registerContainer}>
+              <Paragraph
+                style={[
+                  styles.registerText,
+                  {
+                    color: theme.colors.onSurfaceVariant,
+                  },
+                ]}
+              >
+                Don't have an account?
+              </Paragraph>
+
+              <TouchableOpacity
+                activeOpacity={0.8}
+                onPress={() => navigation.navigate('ShortRegistration')}
+              >
+                <Paragraph
+                  style={[
+                    styles.registerButtonText,
+                    {
+                      color: theme.colors.primary,
+                    },
+                  ]}
+                >
+                  Register
+                </Paragraph>
+              </TouchableOpacity>
+            </View>
           </Card.Actions>
         </CustomCard>
       </ScrollView>
     </Container>
-    // </BackgroundImage>
   );
 };
 
 export default LoginScreen;
-
 const styles = StyleSheet.create({
   container: {
     flexGrow: 1,
@@ -192,36 +180,52 @@ const styles = StyleSheet.create({
     marginBottom: 24,
   },
 
-  subTitle: {
-    // marginTop: 8,
-    fontSize: 16,
+  logo: {
+    width: 120,
+    height: 120,
+    marginBottom: 16,
+  },
+
+  title: {
+    fontSize: 22,
+    fontWeight: '700',
+    textAlign: 'center',
   },
 
   description: {
     marginTop: 8,
     textAlign: 'center',
     lineHeight: 22,
+    fontSize: 14,
   },
 
   actionContainer: {
     flexDirection: 'column',
     alignItems: 'stretch',
     paddingHorizontal: 16,
-    paddingBottom: 16,
+    paddingBottom: 20,
   },
 
   loginButton: {
-    marginBottom: 8,
-  },
-  logoContainer: {
-    // flexDirection: 'row',
-    alignItems: 'center',
-    justifyContent: 'center',
+    marginBottom: 12,
+    borderRadius: 8,
   },
 
-  logo: {
-    width: 120,
-    height: 120,
-    // marginRight: 10,
+  registerContainer: {
+    flexDirection: 'row',
+    justifyContent: 'center',
+    alignItems: 'center',
+    marginTop: 10,
+  },
+
+  registerText: {
+    fontSize: 14,
+  },
+
+  registerButtonText: {
+    fontSize: 14,
+    fontWeight: '700',
+    marginLeft: 5,
+    textDecorationLine: 'underline',
   },
 });

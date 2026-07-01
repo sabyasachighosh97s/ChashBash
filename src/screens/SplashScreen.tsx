@@ -14,7 +14,9 @@ const SplashScreen = ({ navigation }: any) => {
   const handleStart = () => {
     navigation.replace('Login');
   };
-
+  const handleSkip = () => {
+    navigation.replace('MainTabs');
+  };
   return (
     <>
       <StatusBar />
@@ -31,6 +33,13 @@ const SplashScreen = ({ navigation }: any) => {
             textColor={colors.primary}
             onPress={handleStart}
             style={styles.button}
+          />
+          <Rbutton
+            title="Skip Login"
+            buttonColor="transparent"
+            textColor={colors.textLight}
+            onPress={handleSkip}
+            style={styles.skipButton}
           />
         </View>
       </ImageBackground>
@@ -94,5 +103,11 @@ const styles = StyleSheet.create({
     color: '#FFFFFF',
     textAlign: 'center',
     opacity: 0.9,
+  },
+  skipButton: {
+    width: '100%',
+    borderRadius: 30,
+    borderWidth: 1,
+    borderColor: '#FFFFFF',
   },
 });
