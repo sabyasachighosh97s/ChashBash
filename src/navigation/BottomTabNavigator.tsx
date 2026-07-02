@@ -12,7 +12,7 @@ import CommunityScreen from '../Community/CommunityScreen';
 import CreatePostScreen from '../Community/CreatePostScreen';
 import AppIcon from '@components/AppIcon/AppIcon';
 import { useTranslation } from 'react-i18next';
-
+import ProfileScreen from '@screens/Profile/ProfileScreen';
 const Tab = createBottomTabNavigator();
 
 /*
@@ -22,6 +22,7 @@ EMPTY SCREENS
 */
 
 const EmptyScreen = () => {
+  console.log('BottomTab empty  Render');
   return (
     <View
       style={{
@@ -33,6 +34,8 @@ const EmptyScreen = () => {
 };
 
 const CustomTabBar = ({ state, navigation }: BottomTabBarProps) => {
+  console.log('BottomTab Render');
+
   const { t } = useTranslation();
   const getTabIcon = (routeName: string, focused: boolean) => {
     const color = focused ? colors.accent : colors.textMuted;
@@ -149,7 +152,8 @@ const BottomTabNavigator = () => {
       <Tab.Screen name="Fields" component={EmptyScreen} />
       <Tab.Screen name="Add" component={CreatePostScreen} />
       <Tab.Screen name="Community" component={CommunityScreen} />
-      <Tab.Screen name="Profile" component={EmptyScreen} />
+      <Tab.Screen name="Profile" component={ProfileScreen} />
+      {/* <Tab.Screen name="Profile" component={EmptyScreen} /> */}
     </Tab.Navigator>
   );
 };

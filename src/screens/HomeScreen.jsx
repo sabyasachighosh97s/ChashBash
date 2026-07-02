@@ -31,6 +31,7 @@ import CarbonSection from '@components/Dashboard/CarbonSection';
 import { CustomAppBar } from '@components/common/CustomAppBar';
 import colors from '@themes/colors';
 const HomeScreen = () => {
+  console.log("Home Render");
   const { t } = useTranslation();
   const { theme,isDark } = useThemeMode();
   const weatherData = {

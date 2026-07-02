@@ -1,18 +1,25 @@
 import React, { useMemo } from 'react';
-import { ScrollView, StyleSheet } from 'react-native';
-import { Card, Button, useTheme } from 'react-native-paper';
+import { ScrollView, StyleSheet, View } from 'react-native';
+
+import { Card, Button } from 'react-native-paper';
+
 import { useForm, useFieldArray } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
 import z from 'zod';
-import { CustomToast } from '@components/Toast';
+import { useAuth } from '../context/AuthContext';
+import { useNavigation } from '@react-navigation/native';
+
 import Container from '@components/Container/Container';
 import { CustomCard } from '@components/cards/CustomCard';
+import { CustomStatusBar } from '@components/common/CustomStatusBar';
+import { Rbutton } from '@components/common/Rbutton';
+import { Paragraph } from '@components/ui';
+
 import FormInput from '@components/forms/FormInput';
 import FormdownInput from '@components/forms/FormdownInput';
-import { Paragraph } from '@components/ui';
-import { CustomStatusBar } from '@components/common/CustomStatusBar';
-import { useNavigation, useRoute } from '@react-navigation/native';
-import { Rbutton } from '@components/common/Rbutton';
+
+import { CustomToast } from '@components/Toast';
+import colors from '@themes/colors';
 
 const schema = z.object({
   farmerName: z.string().min(1, 'Farmer Name is required'),
@@ -45,27 +52,54 @@ type FormData = z.infer<typeof schema>;
 
 const RegistrationScreen = () => {
   const navigation = useNavigation<any>();
+  const { user, userType, profileCompleted, cropCompleted, completeProfile } =
+    useAuth();
+
+  const isGuest = userType === 'guest';
+  const isOtpUser = userType === 'otp';
+  const isRegisteredUser = userType === 'registered';
+
+  /*
+  ==========================================
+  Dynamic Screen Text
+  ==========================================
+  */
+
+  const screenTitle = isRegisteredUser
+    ? 'Edit Profile'
+    : 'Complete Your Profile';
+
+  const screenSubtitle = isRegisteredUser
+    ? 'Update your farmer information.'
+    : 'Complete your profile to access all farmer features.';
+
+  const buttonTitle = isRegisteredUser ? 'Update Profile' : 'Complete Profile';
+
+  /*
+  ==========================================
+  Form
+  ==========================================
+  */
+
   const {
     control,
     watch,
-    setValue,
     handleSubmit,
     formState: { errors },
   } = useForm<FormData>({
     resolver: zodResolver(schema),
 
     defaultValues: {
-      farmerName: '',
-      mobileNumber: '',
-      state: '',
-      district: '',
-      block: '',
-
-      crops: [],
+      farmerName: user.name,
+      mobileNumber: user.phone,
+      state: user.state,
+      district: user.district,
+      block: user.block,
     },
 
-    mode: 'onChange',
-    reValidateMode: 'onChange',
+    // mode: 'onChange',
+
+    // reValidateMode: 'onChange',
   });
 
   /*
@@ -231,28 +265,38 @@ const RegistrationScreen = () => {
       }));
   }, [selectedDistrict]);
   /*
-  ==========================================
-  Submit
-  ==========================================
-  */
+==========================================
+Submit
 
-  const onSubmit = (data: FormData) => {
-    console.log('Registration Data');
-    console.log(data);
+API Later
+==========================================
+*/
 
-    /*
-    API Later
+  const onSubmit = async (data: FormData) => {
+    const profile = {
+      name: data.farmerName,
+      phone: data.mobileNumber,
+      state: data.state,
+      district: data.district,
+      block: data.block,
+    };
 
-    registrationApi(data)
-  */
+    await completeProfile(profile);
 
     CustomToast.success(
-      'Registration completed successfully.\nPlease login with your mobile number.',
+      isRegisteredUser
+        ? 'Profile Updated Successfully'
+        : 'Profile Completed Successfully',
     );
 
-    setTimeout(() => {
-      navigation.replace('Login');
-    }, 1500);
+    navigation.reset({
+      index: 0,
+      routes: [
+        {
+          name: 'MainTabs',
+        },
+      ],
+    });
   };
 
   return (
@@ -264,17 +308,57 @@ const RegistrationScreen = () => {
         keyboardShouldPersistTaps="handled"
         showsVerticalScrollIndicator={false}
       >
-        <CustomCard>
+        <CustomCard style={styles.profileCard}>
           <Card.Content>
-            <Paragraph style={styles.title}>Farmer Registration</Paragraph>
+            {/* ==========================================
+            Header
+        ========================================== */}
 
-            <Paragraph style={styles.subTitle}>
-              Fill your basic information first.
-            </Paragraph>
+            <Paragraph style={styles.title}>{screenTitle}</Paragraph>
 
-            {/* =========================
-                Farmer Information
-            ========================== */}
+            <Paragraph style={styles.subTitle}>{screenSubtitle}</Paragraph>
+            <View
+              style={{
+                alignSelf: 'center',
+                backgroundColor: isRegisteredUser ? '#E8F5E9' : '#FFF8E1',
+                paddingHorizontal: 14,
+                paddingVertical: 5,
+                borderRadius: 20,
+                marginTop: 8,
+                marginBottom: 8,
+              }}
+            >
+              <Paragraph
+                style={{
+                  color: isRegisteredUser ? '#2E7D32' : '#F57C00',
+                  fontWeight: '700',
+                }}
+              >
+                {isRegisteredUser ? 'Registered Farmer' : 'Profile Incomplete'}
+              </Paragraph>
+            </View>
+            <View
+              style={{
+                flexDirection: 'row',
+                alignItems: 'center',
+                alignSelf: 'center',
+              }}
+            >
+              <Paragraph
+                style={{
+                  fontSize: 13,
+                  color: cropCompleted ? colors.success : colors.warning,
+                  fontWeight: '700',
+                }}
+              >
+                {cropCompleted
+                  ? 'Crop Details Added'
+                  : 'Crop Details Not Added'}
+              </Paragraph>
+            </View>
+            {/* ==========================================
+            Farmer Information
+        ========================================== */}
 
             <Paragraph style={styles.sectionTitle}>
               Farmer Information
@@ -293,8 +377,21 @@ const RegistrationScreen = () => {
               label="Mobile Number"
               keyboardType="number-pad"
               maxLength={10}
+              editable={isGuest}
               error={errors.mobileNumber}
             />
+
+            {!isGuest && (
+              <Paragraph
+                style={{
+                  fontSize: 12,
+                  marginBottom: 14,
+                  color: '#64748B',
+                }}
+              >
+                Mobile number verified through OTP.
+              </Paragraph>
+            )}
 
             <FormdownInput
               control={control}
@@ -322,17 +419,19 @@ const RegistrationScreen = () => {
               error={errors.block}
             />
 
-            {/* =========================
-                Crop Section
-            ========================== */}
+            {/* ==========================================
+            Crop Information
+        ========================================== */}
 
             <Paragraph style={styles.sectionTitle}>
-              Crop / Plot Information
+              Crop Information (Optional)
             </Paragraph>
 
             <Paragraph style={styles.optionalText}>
-              This section is optional. You can add crop information now or
-              later.
+              Crop details are optional for profile completion.
+              {'\n'}
+              You can add your crop information later to access Dr. Qube and
+              other crop-based services.
             </Paragraph>
 
             <Button
@@ -348,7 +447,7 @@ const RegistrationScreen = () => {
                 })
               }
             >
-              Add Crop
+              {fields.length === 0 ? 'Add Crop' : 'Add Another Crop'}
             </Button>
           </Card.Content>
           {/* =========================
@@ -423,7 +522,28 @@ const RegistrationScreen = () => {
               </Card>
             );
           })}
-
+          <View
+            style={{
+              marginHorizontal: 16,
+              marginBottom: 20,
+              backgroundColor: '#FFF8E1',
+              borderRadius: 12,
+              padding: 14,
+            }}
+          >
+            <Paragraph
+              style={{
+                fontSize: 13,
+                color: '#8A6D3B',
+                lineHeight: 20,
+              }}
+            >
+              Your profile will be completed even if you don't add crop details
+              now.
+              {'\n\n'}
+              Crop details can be added later from your Profile.
+            </Paragraph>
+          </View>
           <Card.Actions style={styles.actionContainer}>
             {/* <Button
               mode="contained"
@@ -434,8 +554,8 @@ const RegistrationScreen = () => {
             </Button> */}
 
             <Rbutton
-              title=" Submit Registration"
-              buttonColor="#1565C0"
+              title={buttonTitle}
+              buttonColor={colors.info}
               onPress={handleSubmit(onSubmit)}
               style={styles.submitButton}
             />
@@ -464,15 +584,15 @@ const styles = StyleSheet.create({
   subTitle: {
     textAlign: 'center',
     fontSize: 14,
-    marginBottom: 24,
+
     opacity: 0.7,
   },
 
   sectionTitle: {
     fontSize: 18,
     fontWeight: '700',
-    marginTop: 10,
-    marginBottom: 12,
+    marginTop: 15,
+    // marginBottom: 10,
   },
 
   optionalText: {
@@ -501,5 +621,13 @@ const styles = StyleSheet.create({
 
   submitButton: {
     borderRadius: 10,
+  },
+  profileCard: {
+    marginTop: 20,
+    borderRadius: 24,
+    // paddingHorizontal: 22,
+    paddingVertical: 10,
+    alignItems: 'center',
+    // marginBottom: 18,
   },
 });

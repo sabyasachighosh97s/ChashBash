@@ -3,21 +3,30 @@ import {
   Image,
   ScrollView,
   StyleSheet,
-  View,
   TouchableOpacity,
+  View,
 } from 'react-native';
+
 import { Card, Button, useTheme } from 'react-native-paper';
+
 import { useNavigation } from '@react-navigation/native';
+
 import { useForm } from 'react-hook-form';
+
 import { zodResolver } from '@hookform/resolvers/zod';
-import z from 'zod';
-import { useTranslation } from 'react-i18next';
+
+import { z } from 'zod';
 
 import Container from '@components/Container/Container';
+
 import { CustomCard } from '@components/cards/CustomCard';
+
 import FormInput from '@components/forms/FormInput';
+
 import { Paragraph } from '@components/ui';
+
 import { CustomToast } from '@components/Toast';
+
 import { CustomStatusBar } from '@components/common/CustomStatusBar';
 
 import Logo from '../assets/images/Logo.png';
@@ -32,10 +41,10 @@ const schema = z.object({
 
 type FormData = z.infer<typeof schema>;
 
-const LoginScreen: React.FC = () => {
+const LoginScreen = () => {
   const navigation = useNavigation<any>();
+
   const theme = useTheme();
-  const { t } = useTranslation();
 
   const {
     control,
@@ -47,34 +56,29 @@ const LoginScreen: React.FC = () => {
     defaultValues: {
       mobileNumber: '',
     },
-
-    mode: 'onChange',
-    reValidateMode: 'onChange',
   });
 
   /*
-  ============================================
+  ==========================================
   GET OTP
+
   API Later
-  ============================================
+
+  sendOtpApi()
+
+  ==========================================
   */
 
   const onSubmit = (data: FormData) => {
-    console.log('Mobile Number =>', data.mobileNumber);
+    console.log('Mobile =>', data.mobileNumber);
 
-    /*
-      Later
-
-      await sendOtpApi(data.mobileNumber)
-
-    */
-
-    CustomToast.success('OTP sent successfully');
+    CustomToast.success('OTP Sent Successfully');
 
     navigation.navigate('OtpVerification', {
       mobileNumber: data.mobileNumber,
     });
   };
+
   return (
     <Container>
       <CustomStatusBar />
@@ -87,7 +91,7 @@ const LoginScreen: React.FC = () => {
         <CustomCard>
           <Card.Content>
             <View style={styles.headerContainer}>
-              <Image source={Logo} style={styles.logo} resizeMode="contain" />
+              <Image source={Logo} resizeMode="contain" style={styles.logo} />
 
               <Paragraph
                 style={[
@@ -132,34 +136,19 @@ const LoginScreen: React.FC = () => {
               Get OTP
             </Button>
 
-            <View style={styles.registerContainer}>
+            <TouchableOpacity
+              activeOpacity={0.8}
+              style={styles.skipContainer}
+              onPress={() => navigation.goBack()}
+            >
               <Paragraph
-                style={[
-                  styles.registerText,
-                  {
-                    color: theme.colors.onSurfaceVariant,
-                  },
-                ]}
+                style={{
+                  color: theme.colors.primary,
+                }}
               >
-                Don't have an account?
+                ← Back
               </Paragraph>
-
-              <TouchableOpacity
-                activeOpacity={0.8}
-                onPress={() => navigation.navigate('RegistrationScreen')}
-              >
-                <Paragraph
-                  style={[
-                    styles.registerButtonText,
-                    {
-                      color: theme.colors.primary,
-                    },
-                  ]}
-                >
-                  Register
-                </Paragraph>
-              </TouchableOpacity>
-            </View>
+            </TouchableOpacity>
           </Card.Actions>
         </CustomCard>
       </ScrollView>
@@ -168,6 +157,7 @@ const LoginScreen: React.FC = () => {
 };
 
 export default LoginScreen;
+
 const styles = StyleSheet.create({
   container: {
     flexGrow: 1,
@@ -195,8 +185,8 @@ const styles = StyleSheet.create({
   description: {
     marginTop: 8,
     textAlign: 'center',
-    lineHeight: 22,
     fontSize: 14,
+    lineHeight: 22,
   },
 
   actionContainer: {
@@ -207,25 +197,11 @@ const styles = StyleSheet.create({
   },
 
   loginButton: {
-    marginBottom: 12,
     borderRadius: 8,
+    marginBottom: 16,
   },
 
-  registerContainer: {
-    flexDirection: 'row',
-    justifyContent: 'center',
+  skipContainer: {
     alignItems: 'center',
-    marginTop: 10,
-  },
-
-  registerText: {
-    fontSize: 14,
-  },
-
-  registerButtonText: {
-    fontSize: 14,
-    fontWeight: '700',
-    marginLeft: 5,
-    textDecorationLine: 'underline',
   },
 });

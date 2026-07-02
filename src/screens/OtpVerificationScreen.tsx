@@ -6,36 +6,48 @@ import {
   TouchableOpacity,
   View,
 } from 'react-native';
+
 import { Card, Button, useTheme } from 'react-native-paper';
+
 import { useNavigation, useRoute } from '@react-navigation/native';
-import OtpInput from '@components/forms/OtpInput';
+
 import Container from '@components/Container/Container';
 import { CustomCard } from '@components/cards/CustomCard';
+import { CustomStatusBar } from '@components/common/CustomStatusBar';
 import { Paragraph } from '@components/ui';
 import { CustomToast } from '@components/Toast';
-import { CustomStatusBar } from '@components/common/CustomStatusBar';
+
+import OtpInput from '@components/forms/OtpInput';
+
 import Logo from '../assets/images/Logo.png';
+
+import { useAuth } from '../context/AuthContext';
 
 const OtpVerificationScreen = () => {
   const navigation = useNavigation<any>();
+
   const route = useRoute<any>();
 
   const theme = useTheme();
+
+  const { loginWithOtp } = useAuth();
 
   const mobileNumber = route.params?.mobileNumber ?? '';
 
   const [otp, setOtp] = useState('');
 
   /*
-  ============================================
-  TIMER
-  ============================================
+  ==========================================
+  Timer
+  ==========================================
   */
 
   const [seconds, setSeconds] = useState(30);
 
   useEffect(() => {
-    if (seconds === 0) return;
+    if (seconds === 0) {
+      return;
+    }
 
     const timer = setInterval(() => {
       setSeconds(prev => prev - 1);
@@ -45,18 +57,18 @@ const OtpVerificationScreen = () => {
   }, [seconds]);
 
   /*
-  ============================================
-  VERIFY OTP
+  ==========================================
+  Verify OTP
 
   Dummy OTP
 
   123456
 
-  Replace with API later
-  ============================================
+  Replace API Later
+  ==========================================
   */
 
-  const handleVerifyOtp = () => {
+  const handleVerifyOtp = async () => {
     if (otp.length !== 6) {
       CustomToast.error('Please enter 6 digit OTP');
       return;
@@ -67,29 +79,36 @@ const OtpVerificationScreen = () => {
       return;
     }
 
+    /*
+      API Later
+
+      verifyOtpApi()
+
+    */
+
+    await loginWithOtp(mobileNumber);
+
     CustomToast.success('OTP Verified Successfully');
 
-    navigation.replace('MainTabs');
+    /*
+      Navigation করবে না।
+
+      RootStackNavigator নিজে MainTabs দেখাবে।
+    */
   };
 
   /*
-  ============================================
-  RESEND OTP
-  ============================================
+  ==========================================
+  Resend OTP
+  ==========================================
   */
 
   const handleResendOtp = () => {
     setSeconds(30);
 
     CustomToast.success('OTP Sent Again');
-
-    /*
-      Later
-
-      resendOtpApi()
-
-    */
   };
+
   return (
     <Container>
       <CustomStatusBar />
@@ -102,7 +121,7 @@ const OtpVerificationScreen = () => {
         <CustomCard>
           <Card.Content>
             <View style={styles.headerContainer}>
-              <Image source={Logo} style={styles.logo} resizeMode="contain" />
+              <Image source={Logo} resizeMode="contain" style={styles.logo} />
 
               <Paragraph
                 style={[
@@ -137,8 +156,10 @@ const OtpVerificationScreen = () => {
                 +91 {mobileNumber}
               </Paragraph>
             </View>
+
+            <OtpInput value={otp} onChange={setOtp} />
           </Card.Content>
-          <OtpInput value={otp} onChange={setOtp} />
+
           <Card.Actions style={styles.actionContainer}>
             <Button
               mode="contained"
@@ -170,6 +191,23 @@ const OtpVerificationScreen = () => {
                 </TouchableOpacity>
               )}
             </View>
+
+            <TouchableOpacity
+              activeOpacity={0.8}
+              style={{
+                alignSelf: 'center',
+                marginTop: 20,
+              }}
+              onPress={() => navigation.goBack()}
+            >
+              <Paragraph
+                style={{
+                  color: theme.colors.primary,
+                }}
+              >
+                ← Change Mobile Number
+              </Paragraph>
+            </TouchableOpacity>
           </Card.Actions>
         </CustomCard>
       </ScrollView>
@@ -178,6 +216,7 @@ const OtpVerificationScreen = () => {
 };
 
 export default OtpVerificationScreen;
+
 const styles = StyleSheet.create({
   container: {
     flexGrow: 1,
@@ -229,7 +268,6 @@ const styles = StyleSheet.create({
   },
 
   timerContainer: {
-    justifyContent: 'center',
     alignItems: 'center',
     marginTop: 4,
   },

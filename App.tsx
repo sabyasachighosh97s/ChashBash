@@ -5,7 +5,8 @@ import { SafeAreaProvider } from 'react-native-safe-area-context';
 import { Provider as PaperProvider } from 'react-native-paper';
 import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
 import { NavigationContainer } from '@react-navigation/native';
-
+import AppProvider from './src/context/AppContext';
+import AuthProvider from './src/context/AuthContext';
 import { lightTheme } from '@themes/lightTheme';
 import RootStackNavigator from '@navigation/RootStackNavigator';
 import { requestAppPermissions } from '@utils/permissions';
@@ -15,6 +16,7 @@ import './src/localization/i18n';
 const queryClient = new QueryClient();
 
 export default function App() {
+  console.log('App Render');
   useEffect(() => {
     initializeApp();
   }, []);
@@ -29,9 +31,13 @@ export default function App() {
     <SafeAreaProvider>
       <QueryClientProvider client={queryClient}>
         <PaperProvider theme={lightTheme}>
-          <NavigationContainer>
-            <RootStackNavigator />
-          </NavigationContainer>
+          <AppProvider>
+            <AuthProvider>
+              <NavigationContainer>
+                <RootStackNavigator />
+              </NavigationContainer>
+            </AuthProvider>
+          </AppProvider>
         </PaperProvider>
       </QueryClientProvider>
     </SafeAreaProvider>
