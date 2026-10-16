@@ -5,6 +5,7 @@ import {
   InputOutputAction,
   // POPAction,
   GovernmentAction,
+   FarmAccountAction,
     // FarmIncomeExpenseAction,
 } from './fabActions';
 
@@ -35,7 +36,9 @@ const MainFabActions = [
   {
     action: InputOutputAction,
   },
-
+  {
+    action: FarmAccountAction,
+  },
   //  {
   //   action: FarmIncomeExpenseAction,
   // },
@@ -71,5 +74,6 @@ export const fabRegistry: FabRegistry = {
 
   InputOutput: [],
 
-   FarmIncomeExpense: [],
+  
+   FarmAccount: [],
 };

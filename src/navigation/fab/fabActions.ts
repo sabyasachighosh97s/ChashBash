@@ -32,13 +32,13 @@ export const GovernmentAction: FabAction = {
 //   route: 'Training',
 // };
 
-// export const FarmIncomeExpenseAction: FabAction = {
-//   id: 'income-exp',
-//   icon: 'cash-outline',
-//   label: 'খামারের আয়-ব্যয়',
-//   color: '#7E57C2',
-//   route: 'FarmIncomeExpense',
-// };
+export const FarmAccountAction: FabAction = {
+  id: 'income-exp',
+  icon: 'wallet-outline',
+  label: 'খামারের আয়-ব্যয়',
+  color: '#7E57C2',
+  route: 'FarmAccount',
+};
 
 export const InputOutputAction: FabAction = {
   id: 'input',

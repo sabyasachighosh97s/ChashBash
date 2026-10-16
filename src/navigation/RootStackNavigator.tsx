@@ -44,6 +44,10 @@ import POPDetailScreen from '@screens/POP/POPDetailScreen';
 import MyCropsScreen from '@screens/Profile/MyCropsScreen';
 import ProblemHistoryScreen from '../DrQube/ProblemHistoryScreen';
 import HistoryResultScreen from '../DrQube/HistoryResultScreen';
+import FarmAccountScreen from '@screens/FarmAccount/FarmAccountScreen';
+import FarmAccountEntryScreen from '@screens/FarmAccount/FarmAccountEntryScreen';
+import FarmAccountDetailScreen from '@screens/FarmAccount/FarmAccountDetailScreen';
+
 
 const Stack = createNativeStackNavigator();
 
@@ -302,6 +306,21 @@ if (!isLoggedIn) {
         name="HistoryResultScreen"
         component={HistoryResultScreen}
       />
+
+      <Stack.Screen
+  name="FarmAccount"
+  component={FarmAccountScreen}
+/>
+
+<Stack.Screen
+  name="FarmAccountEntry"
+  component={FarmAccountEntryScreen}
+/>
+
+<Stack.Screen
+  name="FarmAccountDetail"
+  component={FarmAccountDetailScreen}
+/>
     </Stack.Navigator>
     </AppUpdateGate>
   );

@@ -69,6 +69,12 @@ const HEADER_TITLES: Record<string, string> = {
   ProblemHistoryScreen: 'problem_history',
 
   HistoryResultScreen: 'history_result',
+
+  FarmAccount: 'farm_account',
+
+  FarmAccountEntry: 'farm_account_entry',
+
+  FarmAccountDetail: 'farm_account_detail',
 };
 
 const HEADER_HEIGHT = Platform.OS === 'android' ? 70 : 60;

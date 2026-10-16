@@ -32,6 +32,12 @@ const colors = {
   glassActive: 'rgba(255,255,255,0.28)',
   cardOverlay: 'rgba(24, 24, 24, 0.74)',
   glassBorderActive: 'rgba(255,255,255,0.4)',
+  lightBlube:'#b4d2e6',
+  lightGreen:'#b4e6c1',
+  lightMeroon:'#e6b4b4',
+  deepBlue: '#2453B3',
+deepGreen: '#2E7D32',
+deepMeroon: '#8B1E3F',
 };
 
 export default colors;

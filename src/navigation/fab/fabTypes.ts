@@ -32,4 +32,5 @@ export type FabScreenName =
   | 'Profile'
   | 'Information'
   | 'Training'
-  | 'InputOutput';
+  | 'InputOutput'
+  | 'FarmAccount';

@@ -39,6 +39,7 @@
     "react-native-nitro-image": "^0.15.1",
     "react-native-nitro-modules": "^0.35.9",
     "react-native-paper": "^5.15.2",
+    "react-native-paper-dates": "^0.24.0",
     "react-native-paper-dropdown": "^2.3.1",
     "react-native-reanimated": "^4.3.1",
     "react-native-reanimated-skeleton": "^1.6.0",
