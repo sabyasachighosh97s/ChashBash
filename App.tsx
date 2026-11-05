@@ -18,7 +18,10 @@ const queryClient = new QueryClient();
 
 export default function App() {
   console.log('App Render');
-  useEffect(() => {
+console.log(
+  'Hermes Enabled:',
+  typeof HermesInternal === 'object'
+);  useEffect(() => {
     initializeApp();
   }, []);
 

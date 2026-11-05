@@ -75,7 +75,9 @@ const HEADER_TITLES: Record<string, string> = {
   FarmAccountEntry: 'farm_account_entry',
 
   FarmAccountDetail: 'farm_account_detail',
-};
+
+MyInputRequests: 'my_input_requests_list',
+InputRequest: 'my_input_requests',};
 
 const HEADER_HEIGHT = Platform.OS === 'android' ? 70 : 60;
 

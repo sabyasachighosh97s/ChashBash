@@ -135,23 +135,37 @@ const LoginScreen = () => {
 
       CustomToast.success(t('login_successful'));
     } catch (error: any) {
-      // console.log('Status:', error?.response?.status);
-      // console.log('Response Data:', error?.response?.data);
-      const errorData = error?.response?.data;
-      const errorMessage =
-        typeof errorData === 'string'
-          ? errorData
-          : errorData?.detail ||
-            errorData?.message ||
-            errorData?.error ||
-            errorData?.errors?.password?.[0] ||
-            errorData?.errors?.mobile?.[0] ||
-            t('unable_to_login');
+  console.log('========== LOGIN ERROR ==========');
 
-      CustomToast.error(errorMessage);
-    } finally {
-      setLoading(false);
-    }
+  console.log('Request URL:', API_ROUTES.POST.LOGIN);
+  console.log('Status:', error?.response?.status);
+  console.log('Response Data:', error?.response?.data);
+  console.log('Error Message:', error?.message);
+
+  if (error?.response) {
+    console.log('Server responded with an error');
+  } else if (error?.request) {
+    console.log('Request sent but no response received');
+  } else {
+    console.log('Request setup error');
+  }
+
+  const errorData = error?.response?.data;
+
+  const errorMessage =
+    typeof errorData === 'string'
+      ? errorData
+      : errorData?.detail ||
+        errorData?.message ||
+        errorData?.error ||
+        errorData?.errors?.password?.[0] ||
+        errorData?.errors?.mobile?.[0] ||
+        t('unable_to_login');
+
+  CustomToast.error(errorMessage);
+} finally {
+  setLoading(false);
+}
   };
 
   return (

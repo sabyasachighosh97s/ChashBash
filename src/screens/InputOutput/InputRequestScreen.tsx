@@ -26,6 +26,10 @@ import { useTranslation } from 'react-i18next';
 import colors from '@themes/colors';
 import { Rbutton } from '@components/common/Rbutton';
 import CustomHeader from '@components/Header/CustomHeader';
+import {apiGet,apiPost} from '../../api/client';
+import {API_ROUTES} from '../../api/routes';
+import {useAuth} from '../../context/AuthContext';
+
 
 import {
   useNavigation,
@@ -53,6 +57,7 @@ const InputRequestScreen =
       useThemeMode();
 
     const {t} = useTranslation();
+    const { token, userType, isLoggedIn } = useAuth();
 
     const navigation =
       useNavigation<any>();
@@ -126,37 +131,107 @@ const InputRequestScreen =
         [],
       );
 
-    /* ======================================================================
-       Submit
-    ====================================================================== */
+/* ======================================================================
+   Submit
+====================================================================== */
 
-    const handleSubmit =
-      useCallback(() => {
-        if (
-          requestItems.length ===
-          0
-        ) {
-          return;
-        }
+const [isSubmitting, setIsSubmitting] = useState(false);
 
-        /*
-         * ================================================================
-         * FUTURE API
-         * ================================================================
-         *
-         * API এলে এখানেই payload তৈরি হবে।
-         *
-         * Example:
-         *
-         * const payload = requestItems.map(...)
-         *
-         * await inputSaveAPI(payload)
-         *
-         * আপাতত Demo:
-         */
+const handleSubmit = useCallback(async () => {
+  if (requestItems.length === 0 || isSubmitting) {
+    return;
+  }
 
-        setSubmitted(true);
-      }, [requestItems]);
+  // Guest behavior remains local, as before.
+  if (userType !== 'registered' || !isLoggedIn || !token) {
+    setSubmitted(true);
+    return;
+  }
+
+  try {
+    setIsSubmitting(true);
+
+    /*
+     * Add each selected package to the authenticated user's cart.
+     *
+     * Expected request body assumption:
+     * {
+     *   packet_id: selected package ID,
+     *   quantity: selected quantity
+     * }
+     *
+     * Backend contract must confirm these field names.
+     */
+    for (const selected of requestItems) {
+      const availablePackages =
+        selected.item.agri_product_prices ?? [];
+
+      const selectedPacket =
+        availablePackages.find(
+          packet =>
+            String(packet.prod_price_id) ===
+            String(selected.packageId ?? ''),
+        ) ??
+        availablePackages.find(
+          (_, index) =>
+            `packet-${index}` ===
+            String(selected.packageSize ?? ''),
+        ) ??
+        availablePackages[0];
+
+      const packetId = selectedPacket?.prod_price_id;
+
+      if (!packetId) {
+        throw new Error(
+          `Selected package ID is missing for ${
+            selected.item.product_name ||
+            selected.item.name ||
+            'an input item'
+          }`,
+        );
+      }
+
+      const requestBody = {
+        packet_id: packetId,
+        quantity: selected.quantity,
+      };
+
+      console.log('SELECTED PACKET:', selectedPacket);
+      console.log('RESOLVED PACKET ID:', packetId);
+      console.log('CART POST URL:', API_ROUTES.POST.CART_ITEMS);
+      console.log('CART POST BODY:', requestBody);
+
+      // Important: post exactly once per selected item.
+      await apiPost(
+        API_ROUTES.POST.CART_ITEMS,
+        requestBody,
+        token,
+      );
+    }
+
+    // Keep the existing success screen behavior.
+    setSubmitted(true);
+  } catch (error: any) {
+ console.log('CART API ERROR STATUS:', error?.response?.status);
+  console.log('CART API ERROR URL:', error?.config?.url);
+  console.log('CART API ERROR METHOD:', error?.config?.method);
+  console.log('CART API ERROR BODY:', error?.response?.data);
+
+  Alert.alert(
+    t('error') || 'Error',
+    'কার্টে আইটেম যোগ করা যায়নি। আবার চেষ্টা করো।',
+  );
+  } finally {
+    setIsSubmitting(false);
+  }
+}, [
+  requestItems,
+  isSubmitting,
+  userType,
+  isLoggedIn,
+  token,
+  t,
+]);
 
     /* ======================================================================
        Product row
@@ -870,6 +945,7 @@ const InputRequestScreen =
               onPress={
                 handleSubmit
               }
+              disabled={isSubmitting}
               style={
                 styles.submitButton
               }>
@@ -882,7 +958,7 @@ const InputRequestScreen =
   style={
     styles.submitButtonText
   }>
-  {t('send_request')}
+ {isSubmitting ? 'Submitting...' : t('send_request')}
 </Paragraph>
 
 <AppIcon

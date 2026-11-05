@@ -1,4 +1,5 @@
-// src/api/routes.ts
+
+ // src/api/routes.ts
 
 export const API_ROUTES = {
   // ==========================================
@@ -27,12 +28,16 @@ export const API_ROUTES = {
 
     PROBLEM_HISTORY: '/history/user',
 
-    PROBLEM_HISTORY_COMMENTS: (historyId: string | number) =>
-    `/treatment/${historyId}/comments`,
+    PROBLEM_HISTORY_COMMENTS: (
+      historyId: string | number,
+    ) => `/treatment/${historyId}/comments`,
 
     NOMINATIM_REVERSE: '/reverse',
 
     PRODUCTS: '/api/v1/products',
+
+    // Cart
+    CART: '/api/v1/cart',
   },
 
   // ==========================================
@@ -45,6 +50,9 @@ export const API_ROUTES = {
     LOGIN: '/api/v1/auth/login',
 
     CROPS: '/api/v1/crops',
+
+    // Cart
+    CART_ITEMS: '/api/v1/cart/items',
   },
 
   // ==========================================
@@ -52,7 +60,9 @@ export const API_ROUTES = {
   // ==========================================
 
   PUT: {
-    // Add PUT APIs here when required
+    // Cart item quantity update
+    CART_ITEM: (cartItemId: string) =>
+      `/api/v1/cart/items/${cartItemId}`,
   },
 
   // ==========================================
@@ -60,6 +70,11 @@ export const API_ROUTES = {
   // ==========================================
 
   DELETE: {
-    // Add DELETE APIs here when required
+    // Remove one cart item
+    CART_ITEM: (cartItemId: string) =>
+      `/api/v1/cart/items/${cartItemId}`,
+
+    // Clear complete cart
+    CART: '/api/v1/cart',
   },
 };
