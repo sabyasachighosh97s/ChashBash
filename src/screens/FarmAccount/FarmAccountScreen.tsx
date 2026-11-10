@@ -1,4 +1,9 @@
-import React, {useCallback, useMemo, useState} from 'react';
+import React, {
+  useCallback,
+  useEffect,
+  useMemo,
+  useState,
+} from 'react';
 import {
   FlatList,
   Pressable,
@@ -8,18 +13,24 @@ import {
 } from 'react-native';
 
 import {useFocusEffect, useNavigation} from '@react-navigation/native';
-
+import YearMonthFilter from '@components/common/YearMonthFilter';
 import AppIcon from '@components/AppIcon/AppIcon';
 import {Card, Headline, Paragraph} from '@components/ui';
-import {CustomAppBar} from '@components/common/CustomAppBar';
+import {apiGet} from '../../api/client';
+import {API_ROUTES} from '../../api/routes';
+import {useAuth} from '../../context/AuthContext';
 import colors from '@themes/colors';
-import {getItem, setItem} from '@utils/storage';
 import {useTranslation} from 'react-i18next';
 import CustomHeader from '@components/Header/CustomHeader';
 import Container from '@components/Container/Container';
 import GuestAccessModal, {
   useGuestAccess,
 } from '@components/common/GuestAccess';
+import SideFab from '@components/AppFab/SideFab';
+import {FabAction} from '@navigation/fab/fabTypes';
+import Pagination from '@components/common/Pagination/Pagination';
+
+
 export type FarmAccountType = 'income' | 'expense';
 
 export type FarmAccountEntry = {
@@ -33,8 +44,6 @@ export type FarmAccountEntry = {
   notes?: string;
 };
 
-export const FARM_ACCOUNT_STORAGE_KEY =
-  'chashbash_farm_account_entries';
 
 /*
 =========================================================
@@ -47,46 +56,9 @@ When API is integrated, this entire source can be replaced
 by API response without changing the UI structure.
 */
 
-const DEMO_ENTRIES: FarmAccountEntry[] = [
-  {
-    id: 'demo-1',
-    type: 'income',
-    category: 'Crop Sale',
-    amount: 18500,
-    date: '2026-09-22',
-    paymentMethod: 'Bank Transfer',
-    description: 'Paddy sale to local market',
-    notes: 'First lot of the season',
-  },
-  {
-    id: 'demo-2',
-    type: 'expense',
-    category: 'Fertilizer',
-    amount: 4200,
-    date: '2026-09-20',
-    paymentMethod: 'Cash',
-    description: 'Urea and DAP purchase',
-    notes: 'For the current crop cycle',
-  },
-  {
-    id: 'demo-3',
-    type: 'expense',
-    category: 'Labour',
-    amount: 2800,
-    date: '2026-09-18',
-    paymentMethod: 'Cash',
-    description: 'Field preparation labour',
-  },
-  {
-    id: 'demo-4',
-    type: 'income',
-    category: 'Vegetable Sale',
-    amount: 7600,
-    date: '2026-09-16',
-    paymentMethod: 'UPI',
-    description: 'Seasonal vegetable sale',
-  },
-];
+const PAGE_SIZE = 10;
+
+
 
 const currency = '₹';
 
@@ -113,7 +85,7 @@ const FarmAccountScreen = () => {
   const navigation = useNavigation<any>();
 
   const {t, i18n} = useTranslation();
-
+const {token} = useAuth();
   const {
     isGuest,
     visible,
@@ -136,30 +108,138 @@ const FarmAccountScreen = () => {
 
   const [refreshing, setRefreshing] = useState(false);
 
+  const [dateFilterVisible, setDateFilterVisible] = useState(false);
+
+const [selectedYear, setSelectedYear] = useState<number | null>(null);
+
+const [selectedMonth, setSelectedMonth] = useState<number | null>(null);
+
+const [currentPage, setCurrentPage] = useState(1);
+
+useEffect(() => {
+  setCurrentPage(1);
+}, [filter, selectedYear, selectedMonth]);
+
   /*
   =========================================================
   LOAD ENTRIES
   =========================================================
   */
 
- const loadEntries = useCallback(async () => {
-  // Guest users must not see demo/local financial data.
+const loadEntries = useCallback(async () => {
+  // Guest users must not see financial data.
   if (isGuest) {
     setEntries([]);
     return;
   }
 
-  const stored = await getItem(FARM_ACCOUNT_STORAGE_KEY);
+  try {
+    setRefreshing(true);
 
-  if (Array.isArray(stored) && stored.length > 0) {
-    setEntries(stored);
-    return;
+    const params: Record<string, string> = {
+      lang: i18n.language?.startsWith('bn') ? 'bn' : 'en',
+    };
+
+    /*
+     * YEAR FILTER
+     *
+     * Year selected:
+     * Fetch only selected year's statements.
+     *
+     * Year + Month selected:
+     * Fetch only selected month of selected year.
+     *
+     * Month only:
+     * Fetch all statements and filter by month locally.
+     */
+
+    if (selectedYear !== null) {
+      if (selectedMonth !== null) {
+        const lastDay = new Date(
+          selectedYear,
+          selectedMonth,
+          0,
+        ).getDate();
+
+        params.start_date =
+          `${selectedYear}-${String(selectedMonth).padStart(2, '0')}-01T00:00:00`;
+
+        params.end_date =
+          `${selectedYear}-${String(selectedMonth).padStart(2, '0')}-${lastDay}T23:59:59`;
+      } else {
+        params.start_date = `${selectedYear}-01-01T00:00:00`;
+        params.end_date = `${selectedYear}-12-31T23:59:59`;
+      }
+    }
+
+    console.log('FARM ACCOUNT STATEMENTS API');
+    console.log('Params:', params);
+    console.log('Token available:', !!token);
+
+    const response = await apiGet(
+      API_ROUTES.GET.FINANCE_STATEMENTS,
+      token,
+      {
+        params,
+      },
+    );
+
+    console.log('FARM ACCOUNT STATEMENTS RESPONSE:', response.data);
+
+    const apiTransactions = Array.isArray(response.data)
+      ? response.data
+      : [];
+
+    const normalizedEntries: FarmAccountEntry[] =
+      apiTransactions.map((item: any) => {
+        const rawDate =
+          item.transaction_date ?? item.date ?? '';
+
+        const parsedDate = new Date(rawDate);
+
+        let formattedDate = String(rawDate).slice(0, 10);
+
+        if (!Number.isNaN(parsedDate.getTime())) {
+          const year = parsedDate.getFullYear();
+          const month = String(
+            parsedDate.getMonth() + 1,
+          ).padStart(2, '0');
+          const day = String(
+            parsedDate.getDate(),
+          ).padStart(2, '0');
+
+          formattedDate = `${year}-${month}-${day}`;
+        }
+
+   return {
+  id: String(item.id),
+  type: item.transaction_type,
+  category: item.category?.name ?? '',
+  amount: Number(item.amount ?? 0),
+  date: formattedDate,
+  paymentMethod: item.payment_mode?.name ?? '',
+  description: item.description ?? '',
+};
+      });
+
+    setEntries(normalizedEntries);
+  } catch (error: any) {
+    console.log('FARM ACCOUNT API ERROR');
+    console.log('Status:', error?.response?.status);
+    console.log('Response:', error?.response?.data);
+    console.log('Message:', error?.message);
+
+    setEntries([]);
+  } finally {
+    setRefreshing(false);
   }
-
-  await setItem(FARM_ACCOUNT_STORAGE_KEY, DEMO_ENTRIES);
-
-  setEntries(DEMO_ENTRIES);
-}, [isGuest]);
+}, [
+  isGuest,
+  token,
+  i18n.language,
+  selectedYear,
+  selectedMonth,
+]);
 
   useFocusEffect(
     useCallback(() => {
@@ -172,42 +252,66 @@ const FarmAccountScreen = () => {
   REFRESH
   =========================================================
   */
+const refresh = async () => {
+  await loadEntries();
+};
 
-  const refresh = async () => {
-    setRefreshing(true);
+  const availableYears = useMemo(() => {
+  const years = entries.map(item => Number(item.date.split('-')[0]));
 
-    await loadEntries();
+ 
+  years.push(new Date().getFullYear());
 
-    setRefreshing(false);
+  return [...new Set(years)].sort((a, b) => b - a);
+}, [entries]);
+
+/*
+=========================================================
+YEAR / MONTH DATE FILTER
+=========================================================
+*/
+
+const dateFilteredEntries = useMemo(() => {
+  return entries.filter(item => {
+    const [year, month] = item.date.split('-').map(Number);
+
+    const matchesYear =
+      selectedYear === null || year === selectedYear;
+
+    const matchesMonth =
+      selectedMonth === null || month === selectedMonth;
+
+    return matchesYear && matchesMonth;
+  });
+}, [entries, selectedYear, selectedMonth]);
+
+/*
+=========================================================
+TOTALS
+=========================================================
+*/
+
+const totals = useMemo(() => {
+  const income = dateFilteredEntries
+    .filter(item => item.type === 'income')
+    .reduce(
+      (sum, item) => sum + Number(item.amount || 0),
+      0,
+    );
+
+  const expense = dateFilteredEntries
+    .filter(item => item.type === 'expense')
+    .reduce(
+      (sum, item) => sum + Number(item.amount || 0),
+      0,
+    );
+
+  return {
+    income,
+    expense,
+    balance: income - expense,
   };
-
-  /*
-  =========================================================
-  TOTALS
-  =========================================================
-  */
-
-  const totals = useMemo(() => {
-    const income = entries
-      .filter(item => item.type === 'income')
-      .reduce(
-        (sum, item) => sum + Number(item.amount || 0),
-        0,
-      );
-
-    const expense = entries
-      .filter(item => item.type === 'expense')
-      .reduce(
-        (sum, item) => sum + Number(item.amount || 0),
-        0,
-      );
-
-    return {
-      income,
-      expense,
-      balance: income - expense,
-    };
-  }, [entries]);
+}, [dateFilteredEntries]);
 
   /*
   =========================================================
@@ -215,13 +319,26 @@ const FarmAccountScreen = () => {
   =========================================================
   */
 
-  const filteredEntries = useMemo(
-    () =>
-      filter === 'all'
-        ? entries
-        : entries.filter(item => item.type === filter),
-    [entries, filter],
+const filteredEntries = useMemo(
+  () =>
+    filter === 'all'
+      ? dateFilteredEntries
+      : dateFilteredEntries.filter(item => item.type === filter),
+  [dateFilteredEntries, filter],
+);
+
+const totalPages = Math.ceil(
+  filteredEntries.length / PAGE_SIZE,
+);
+
+const paginatedEntries = useMemo(() => {
+  const startIndex = (currentPage - 1) * PAGE_SIZE;
+
+  return filteredEntries.slice(
+    startIndex,
+    startIndex + PAGE_SIZE,
   );
+}, [filteredEntries, currentPage]);
 
   /*
   =========================================================
@@ -238,6 +355,26 @@ const openAdd = (type: FarmAccountType) => {
   navigation.navigate('FarmAccountEntry', {type});
 };
 
+const farmAccountFabActions = useMemo<FabAction[]>(
+  () => [
+    {
+      id: 'add-income',
+      icon: 'arrow-down-circle-outline',
+      label: t('add_income'),
+      color: colors.success,
+      route: 'FarmAccountEntry',
+    },
+    {
+      id: 'add-expense',
+      icon: 'arrow-up-circle-outline',
+      label: t('add_expense'),
+      color: colors.error,
+      route: 'FarmAccountEntry',
+    },
+  ],
+  [t],
+);
+
   /*
   =========================================================
   RENDER
@@ -246,10 +383,12 @@ const openAdd = (type: FarmAccountType) => {
 
   return (
     <Container>
-      <CustomHeader />
-
+<CustomHeader
+  showFilter
+  onFilterPress={() => setDateFilterVisible(true)}
+/>
       <FlatList
-        data={filteredEntries}
+        data={paginatedEntries}
         keyExtractor={item => item.id}
         refreshControl={
           <RefreshControl
@@ -404,6 +543,8 @@ const openAdd = (type: FarmAccountType) => {
           />
         )}
         ListEmptyComponent={
+
+          
           <View style={styles.empty}>
             <AppIcon
               type="MaterialCommunityIcons"
@@ -423,49 +564,47 @@ const openAdd = (type: FarmAccountType) => {
             </Paragraph>
           </View>
         }
-      />
 
+     
+      />
+            {filteredEntries.length > PAGE_SIZE && (
+        <View style={styles.paginationContainer}>
+          <Pagination
+            currentPage={currentPage}
+            totalPages={totalPages}
+            onPageChange={setCurrentPage}
+            loading={refreshing}
+          />
+        </View>
+      )}
+
+<YearMonthFilter
+  visible={dateFilterVisible}
+  selectedYear={selectedYear}
+  selectedMonth={selectedMonth}
+  availableYears={availableYears}
+  onClose={() => setDateFilterVisible(false)}
+  onApply={(year, month) => {
+    setSelectedYear(year);
+    setSelectedMonth(month);
+    setDateFilterVisible(false);
+  }}
+/>
       {/* =====================================================
           ACTION BAR
       ===================================================== */}
 
-      <View style={styles.actionBar}>
-        <Pressable
-          style={[
-            styles.actionButton,
-            styles.expenseButton,
-          ]}
-          onPress={() => openAdd('expense')}>
-          <AppIcon
-            type="MaterialCommunityIcons"
-            name="arrow-up-circle-outline"
-            size={22}
-            color={colors.surface}
-          />
-
-          <Paragraph style={styles.actionExpenseText}>
-            {t('add_expense')}
-          </Paragraph>
-        </Pressable>
-
-        <Pressable
-          style={[
-            styles.actionButton,
-            styles.incomeButton,
-          ]}
-          onPress={() => openAdd('income')}>
-          <AppIcon
-            type="MaterialCommunityIcons"
-            name="arrow-down-circle-outline"
-            size={22}
-            color={colors.surface}
-          />
-
-          <Paragraph style={styles.actionIncomeText}>
-            {t('add_income')}
-          </Paragraph>
-        </Pressable>
-      </View>
+            <SideFab
+        actions={farmAccountFabActions}
+        bottom={100}
+        onActionPress={action => {
+          if (action.id === 'add-income') {
+            openAdd('income');
+          } else if (action.id === 'add-expense') {
+            openAdd('expense');
+          }
+        }}
+      />
             <GuestAccessModal
         visible={visible}
         onClose={closeGuestAccess}
@@ -709,10 +848,18 @@ const styles = StyleSheet.create({
     backgroundColor: colors.background,
   },
 
-  content: {
-    paddingHorizontal: 18,
-    paddingBottom: 130,
-  },
+ content: {
+  paddingHorizontal: 18,
+  paddingBottom: 16,
+},
+
+paginationContainer: {
+  paddingHorizontal: 12,
+  // paddingVertical: ,
+  backgroundColor: colors.background,
+  alignItems: 'center',
+  justifyContent: 'center',
+},
 
   /*
   ========================================================
@@ -1002,53 +1149,8 @@ activeTabText: {
     fontWeight: '600',
   },
 
-  /*
-  ========================================================
-  BOTTOM ACTION BAR
-  ========================================================
-  */
+  
 
-  actionBar: {
-    position: 'absolute',
-    left: 18,
-    right: 18,
-    bottom: 18,
-    flexDirection: 'row',
-    gap: 10,
-  },
-
-  actionButton: {
-    flex: 1,
-    minHeight: 52,
-    borderRadius: 18,
-    flexDirection: 'row',
-    alignItems: 'center',
-    justifyContent: 'center',
-    gap: 8,
-    borderWidth: 1,
-    backgroundColor: colors.surface,
-   
-  },
-
-  expenseButton: {
-    backgroundColor: colors.error,
-    borderColor: '#ff0008',
-  },
-
-  incomeButton: {
-    backgroundColor: colors.primary,
-    borderColor: '#009d08b8',
-  },
-
-  actionExpenseText: {
-    color: colors.surface,
-    fontWeight: '700',
-  },
-
-  actionIncomeText: {
-    color: colors.surface,
-    fontWeight: '700',
-  },
 
   /*
   ========================================================

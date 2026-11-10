@@ -6,7 +6,21 @@ export const lightTheme = {
   ...MD3LightTheme,
 
   dark: false,
+  fonts: {
+    ...MD3LightTheme.fonts,
 
+    bodySmall: {
+      ...MD3LightTheme.fonts.bodySmall,
+      lineHeight: 22,
+      includeFontPadding: true,
+    },
+
+    bodyLarge: {
+      ...MD3LightTheme.fonts.bodyLarge,
+      lineHeight: 28,
+      includeFontPadding: true,
+    },
+  },
   colors: {
     ...MD3LightTheme.colors,
 

@@ -411,5 +411,13 @@
   "quantity_increase_hint": "{{difference}} পরিমাণ বাড়ানো হয়েছে",
   "quantity_decrease_hint": "{{difference}} পরিমাণ কমানো হয়েছে",
   "package_unit": "প্যাকেট",
-  "clear_cart": "সম্পূর্ণ কার্ড ডিলিট করুন"
+  "clear_cart": "সম্পূর্ণ কার্ড ডিলিট করুন",
+"date_filter": "তারিখ অনুযায়ী ফিল্টার",
+"select_year_month": "বছর ও মাস নির্বাচন করুন",
+"all_years": "সব বছর",
+"all_months": "সব মাস",
+"select_year": "বছর নির্বাচন করুন",
+"select_month": "মাস নির্বাচন করুন",
+"reset_filter": "ফিল্টার রিসেট",
+"apply_filter": "প্রয়োগ করুন"
 }

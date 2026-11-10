@@ -38,6 +38,10 @@ export const API_ROUTES = {
 
     // Cart
     CART: '/api/v1/cart',
+
+    FINANCE_CATEGORIES: '/api/v1/finance/categories',
+
+    FINANCE_STATEMENTS: '/api/v1/finance/statements',
   },
 
   // ==========================================
@@ -53,6 +57,8 @@ export const API_ROUTES = {
 
     // Cart
     CART_ITEMS: '/api/v1/cart/items',
+
+    FINANCE_TRANSACTIONS: '/api/v1/finance/transactions',
   },
 
   // ==========================================

@@ -375,5 +375,13 @@
   "submitted_date_time": "Submitted Date & Time",
   "cart_loading": "Loading cart...",
 "cart_empty": "Your cart is empty.",
-"approximate_price": "Estimated total"
+"approximate_price": "Estimated total",
+"date_filter": "Date Filter",
+"select_year_month": "Select Year and Month",
+"all_years": "All Years",
+"all_months": "All Months",
+"select_year": "Select Year",
+"select_month": "Select Month",
+"reset_filter": "Reset Filter",
+"apply_filter": "Apply Filter"
 }

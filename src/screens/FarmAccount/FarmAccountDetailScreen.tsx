@@ -1,3 +1,4 @@
+
 import React from 'react';
 
 import {
@@ -10,8 +11,8 @@ import {
   useNavigation,
   useRoute,
 } from '@react-navigation/native';
-import Container from '@components/Container/Container';
 
+import Container from '@components/Container/Container';
 import AppIcon from '@components/AppIcon/AppIcon';
 
 import {
@@ -21,13 +22,17 @@ import {
 } from '@components/ui';
 
 import {CustomAppBar} from '@components/common/CustomAppBar';
+import CustomHeader from '@components/Header/CustomHeader';
 
 import colors from '@themes/colors';
 
 import {useTranslation} from 'react-i18next';
 
 import {FarmAccountEntry} from './FarmAccountScreen';
-import CustomHeader from '@components/Header/CustomHeader';
+
+// =========================================================
+// FORMAT MONEY
+// =========================================================
 
 const formatMoney = (value: number) =>
   `₹${Number(value || 0).toLocaleString('en-IN', {
@@ -35,16 +40,30 @@ const formatMoney = (value: number) =>
     maximumFractionDigits: 2,
   })}`;
 
+// =========================================================
+// FORMAT DATE
+// =========================================================
+
 const formatDate = (
   date: string,
   language: string,
 ) => {
-  const d = new Date(`${date}T00:00:00`);
+  if (!date) {
+    return '—';
+  }
+
+  // Use the date portion directly to avoid timezone shifts.
+  const datePart = date.slice(0, 10);
+  const [year, month, day] = datePart.split('-').map(Number);
+
+  if (!year || !month || !day) {
+    return date;
+  }
+
+  const d = new Date(year, month - 1, day);
 
   return d.toLocaleDateString(
-    language?.startsWith('bn')
-      ? 'bn-IN'
-      : 'en-IN',
+    language?.startsWith('bn') ? 'bn-IN' : 'en-IN',
     {
       day: '2-digit',
       month: 'long',
@@ -53,13 +72,17 @@ const formatDate = (
   );
 };
 
+// =========================================================
+// SCREEN
+// =========================================================
+
 const FarmAccountDetailScreen = () => {
   const navigation = useNavigation<any>();
   const route = useRoute<any>();
 
   const {t, i18n} = useTranslation();
 
-  const entry: FarmAccountEntry =
+  const entry: FarmAccountEntry | undefined =
     route.params?.entry;
 
   if (!entry) {
@@ -67,9 +90,7 @@ const FarmAccountDetailScreen = () => {
       <View style={styles.screen}>
         <CustomAppBar
           title={t('transaction_details')}
-          onBackPress={() =>
-            navigation.goBack()
-          }
+          onBackPress={() => navigation.goBack()}
         />
 
         <View style={styles.empty}>
@@ -81,24 +102,21 @@ const FarmAccountDetailScreen = () => {
     );
   }
 
-  const isIncome =
-    entry.type === 'income';
+  const isIncome = entry.type === 'income';
 
   const accent = isIncome
     ? colors.success
     : colors.error;
 
   return (
-     <Container>
-     
-    <CustomHeader />
+    <Container>
+      <CustomHeader />
 
       <ScrollView
         showsVerticalScrollIndicator={false}
         contentContainerStyle={styles.content}>
-        {/* =================================================
-            HERO
-        ================================================= */}
+
+        {/* HERO */}
 
         <View style={styles.hero}>
           <View style={styles.icon}>
@@ -117,9 +135,7 @@ const FarmAccountDetailScreen = () => {
           <Paragraph
             size="xs"
             style={styles.typeLabel}>
-            {isIncome
-              ? t('income')
-              : t('expense')}
+            {isIncome ? t('income') : t('expense')}
           </Paragraph>
 
           <Headline
@@ -130,13 +146,11 @@ const FarmAccountDetailScreen = () => {
           </Headline>
 
           <Paragraph style={styles.category}>
-            {entry.category}
+            {entry.category || '—'}
           </Paragraph>
         </View>
 
-        {/* =================================================
-            DETAILS
-        ================================================= */}
+        {/* DETAILS */}
 
         <Card style={styles.detailsCard}>
           <Headline
@@ -157,7 +171,7 @@ const FarmAccountDetailScreen = () => {
           <DetailRow
             icon="cash-multiple"
             label={t('payment_method')}
-            value={entry.paymentMethod}
+            value={entry.paymentMethod || '—'}
           />
 
           <DetailRow
@@ -167,28 +181,25 @@ const FarmAccountDetailScreen = () => {
                 ? t('income_head')
                 : t('expense_head')
             }
-            value={entry.category}
+            value={entry.category || '—'}
           />
 
           <DetailRow
             icon="text-box-outline"
             label={t('description')}
-            value={entry.description}
+            value={entry.description || '—'}
           />
 
-          {entry.notes ? (
-            <DetailRow
-              icon="note-text-outline"
-              label={t('notes')}
-              value={entry.notes}
-              last
-            />
-          ) : null}
+      
         </Card>
       </ScrollView>
     </Container>
   );
 };
+
+// =========================================================
+// DETAIL ROW
+// =========================================================
 
 const DetailRow = ({
   icon,
@@ -231,6 +242,10 @@ const DetailRow = ({
     </View>
   </View>
 );
+
+// =========================================================
+// STYLES
+// =========================================================
 
 const styles = StyleSheet.create({
   screen: {

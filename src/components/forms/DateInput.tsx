@@ -14,8 +14,7 @@ import {
   FieldValues,
   Path,
 } from 'react-hook-form';
-import {TextInput} from 'react-native-paper';
-
+import {TextInput, useTheme} from 'react-native-paper';
 import colors from '@themes/colors';
 
 type DateInputProps<T extends FieldValues> = {
@@ -169,6 +168,7 @@ export default function DateInput<T extends FieldValues>({
   maximumDate,
 }: DateInputProps<T>) {
   const [open, setOpen] = useState(false);
+  const theme = useTheme();
 
   const today = useMemo(() => startOfDay(new Date()), []);
 
@@ -191,31 +191,51 @@ export default function DateInput<T extends FieldValues>({
 
         return (
           <View style={styles.container}>
-            <TextInput
-              mode="outlined"
-              label={label}
-              placeholder={placeholder}
-              value={displayValue}
-              editable={false}
-              onPressIn={openPicker}
-              showSoftInputOnFocus={false}
-              error={!!error}
-              right={
-                <TextInput.Icon
-                  icon="calendar-month-outline"
-                  onPress={openPicker}
-                />
-              }
-              outlineColor={colors.border}
-              activeOutlineColor={colors.primary}
-              textColor={colors.text}
-              placeholderTextColor={colors.placeholder}
-              style={styles.input}
-              contentStyle={styles.inputContent}
-              theme={{
-                roundness: 12,
-              }}
-            />
+         <TextInput
+  mode="outlined"
+  label={label}
+  placeholder={placeholder}
+  value={displayValue}
+  editable={false}
+  onPressIn={openPicker}
+  showSoftInputOnFocus={false}
+  error={!!error}
+  right={
+    <TextInput.Icon
+      icon="calendar-month-outline"
+      onPress={openPicker}
+    />
+  }
+  outlineColor={error ? theme.colors.error : theme.colors.outline}
+  activeOutlineColor={
+    error ? theme.colors.error : theme.colors.primary
+  }
+  textColor={theme.colors.onSurface}
+  placeholderTextColor={theme.colors.outline}
+  selectionColor={error ? theme.colors.error : theme.colors.primary}
+  style={[
+    styles.input,
+    {
+      backgroundColor: theme.colors.surface,
+    },
+  ]}
+  contentStyle={{
+    ...styles.inputContent,
+    color: theme.colors.onSurface,
+  }}
+  theme={{
+    colors: {
+      text: theme.colors.onSurface,
+      primary: error ? theme.colors.error : theme.colors.primary,
+      placeholder: theme.colors.outline,
+    },
+  }}
+  outlineStyle={{
+    borderRadius: 12,
+    borderWidth: 0.5,
+    borderColor: error ? theme.colors.error : theme.colors.outline,
+  }}
+/>
 
             <DateCalendarModal
               visible={open}
